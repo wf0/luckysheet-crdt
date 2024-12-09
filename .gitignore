@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+server/build
+server/logs
+
+Luckysheet-source/dist
+Luckysheet-source/node_modules
+
+
+example

@@ -1,0 +1,27 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+}
+iframe {
+  flex: 1;
+}
+.left {
+  height: 100%;
+  width: 100%;
+}
+.right {
+  flex: 1;
+}
