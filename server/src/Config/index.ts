@@ -22,3 +22,12 @@ export const LOGGER_CONFIG = {
   filepath: path.resolve(__dirname, "../../logs"),
   filename: `luckysheet.${dayjs().format("YYYY-MM-DD")}.log`,
 };
+
+/**
+ * 导出演示用 Worker Books Info
+ */
+export const WORKER_BOOK_INFO = {
+  gridKey: "gridkey_demo",
+  title: "测试工作簿",
+  lang: "zh",
+};

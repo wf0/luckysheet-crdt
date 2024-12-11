@@ -373,7 +373,16 @@ const server = {
 					clearInterval(_this.retryTimer)
 					_this.retryTimer = null
 				} else {
-					console.error(locale().websocket.contact);
+					// 异常关闭连接，需要提供重连机制
+					_this.wxErrorCount++;
+
+					if (_this.wxErrorCount > 3) {
+						console.error(locale().websocket.contact);
+					}
+					else {
+						console.info('连接关闭，正在重试...')
+						_this.openWebSocket();
+					}
 				}
 			}
 		}

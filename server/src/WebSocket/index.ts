@@ -2,7 +2,7 @@ import { DB } from "../Sequelize";
 import { IncomingMessage, Server } from "http";
 import { databaseHandler } from "./database";
 import { getURLQuery, unzip } from "../Utils";
-import { logger } from "../Meddlewear/Logger";
+import { logger } from "../Utils/Logger";
 import { CustomWebSocket } from "../Interface";
 import { RawData, WebSocketServer } from "ws";
 import { broadcastOtherClients } from "./broadcast";

@@ -195,7 +195,7 @@ async function core_rollup() {
     });
 
     bundle.write({
-        file: 'dist/luckysheet.umd.js',
+        file: '../public/libs/luckysheet//luckysheet.umd.js',
         format: 'umd',
         name: 'luckysheet',
         sourcemap: true,
@@ -205,7 +205,7 @@ async function core_rollup() {
 
     if (production) {
         bundle.write({
-            file: 'dist/luckysheet.esm.js',
+            file: '../public/libs/luckysheet//luckysheet.esm.js',
             format: 'esm',
             name: 'luckysheet',
             sourcemap: true,

@@ -1,12 +1,9 @@
 import pako from "pako";
-import { Express } from "express";
-import { SERVER_PORT } from "../Config";
-import { logger } from "../Meddlewear/Logger";
 
 /**
  * Pako 数据解析
  */
-export function unzip(str: string) {
+export function unzip(str: string): string {
   const chartData = str
     .toString()
     .split("")
@@ -49,9 +46,8 @@ export function getURLQuery(url: string | undefined, key: string) {
 }
 
 /**
- * 封装 app.listen 事件 https://emoji6.com/emojiall/
+ * 判断传入的参数是否为空 null undefined ""
  */
-export function listen(app: Express) {
-  const message = `✅️ Server's running at: http://localhost:${SERVER_PORT}`;
-  return app.listen(SERVER_PORT, () => logger.info(message));
+export function isEmpty(val: unknown) {
+  return val === null || val === undefined || val === "";
 }

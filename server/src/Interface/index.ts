@@ -7,3 +7,4 @@ export interface CustomWebSocket extends WebSocket {
     fileid: string;
   };
 }
+
