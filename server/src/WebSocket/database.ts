@@ -33,6 +33,7 @@ import { CellDataService } from "../Service/CellData";
 import { ConfigBorderService } from "../Service/ConfigBorder";
 import { configHiddenAndLenService } from "../Service/ConfigHiddenAndLen";
 import { ConfigMergeService } from "../Service/ConfigMerge";
+import { ImageService } from "../Service/Image";
 import { isEmpty } from "../Utils";
 import { logger } from "../Utils/Logger";
 
@@ -429,7 +430,42 @@ async function all(data: string) {
       }
     }
   } else if (k === "images") {
-    console.log("==> 插入图片");
+    //  {"t":"all","i":"4735b996-d89d-4d7f-ad8e-1124bccc89b0","v":{
+    // "img_3aaW3S653e10_1733991741264":{"type":"3","src":"/uploads/36399c90241d782399d05acd9dfb1d9d.png","originWidth":685,"originHeight":490,"default":{"width":400,"height":286,"left":18,"top":229},"crop":{"width":400,"height":286,"offsetLeft":0,"offsetTop":0},"isFixedPos":false,"fixedLeft":46,"fixedTop":90,"border":{"width":0,"radius":0,"style":"solid","color":"#000"}},
+    // "img_eeeKop3oTl3a_1733991749199":{"type":"3","src":"/uploads/31ae8c6088f50c267a09b00b3555d787.png","originWidth":685,"originHeight":386,"default":{"width":400,"height":225,"left":0,"top":171},"crop":{"width":400,"height":225,"offsetLeft":0,"offsetTop":0},"isFixedPos":false,"fixedLeft":46,"fixedTop":90,"border":{"width":0,"radius":0,"style":"solid","color":"#000"}}
+    // },"k":"images"}
+    /* eslint-disable */
+    //  又是一个先删除后新增的操作
+    await ImageService.deleteImage(i);
+    for (const key in v) {
+      if (Object.prototype.hasOwnProperty.call(v, key)) {
+        // @ts-ignore
+        const value = v[key];
+        // 解析 value 值
+        await ImageService.createImage({
+          worker_sheet_id: i,
+          image_type: value.type, // type 1移动并调整单元格大小 2移动并且不调整单元格的大小 3不要移动单元格并调整其大小
+          image_src: value.src, // 图片地址
+          image_originWidth: value.originWidth, // 原始宽度
+          image_originHeight: value.originHeight, // 原始高度
+          image_default_width: value.default.width, // 默认宽度
+          image_default_height: value.default.height, // 默认高度
+          image_default_left: value.default.left, // 默认左边距
+          image_default_top: value.default.top, // 默认上边距
+          image_crop_width: value.crop.width, // 裁剪宽度
+          image_crop_height: value.crop.height, // 裁剪高度
+          image_crop_offsetLeft: value.crop.offsetLeft, // 裁剪左边距
+          image_crop_offsetTop: value.crop.offsetTop, // 裁剪上边距
+          image_isFixedPos: value.isFixedPos, // 是否固定位置
+          image_fixedLeft: value.fixedLeft, // 固定左边距
+          image_fixedTop: value.fixedTop, // 固定上边距
+          image_border_width: value.border.width, // 边框宽度
+          image_border_radius: value.border.radius, // 圆角
+          image_border_style: value.border.style, // 边框样式
+          image_border_color: value.border.color, // 边框颜色
+        });
+      }
+    }
   }
 }
 

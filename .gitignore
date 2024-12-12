@@ -25,9 +25,7 @@ dist-ssr
 
 server/build
 server/logs
+server/public/uploads/*
 
 Luckysheet-source/dist
 Luckysheet-source/node_modules
-
-
-example

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Luckysheet UI 重构 copy 动画边框绘制</title>
+    <style>
+      :root {
+        --width: 60px;
+        --height: 40px;
+        --cubWidth: 0.5;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      .main {
+        margin: 100px 100px;
+        display: inline-block;
+      }
+      .box {
+        transform: rotate(90deg);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        /* border: solid red 1px; */
+        position: relative;
+        width: var(--width);
+        height: var(--height);
+        background-color: #fff;
+      }
+      .top,
+      .bottom {
+        display: flex;
+        justify-content: space-between;
+        flex: 1;
+        width: calc(var(--width) * var(--cubWidth) * 9);
+      }
+      .bottom {
+        transform: translateX(calc(var(--cubWidth) * var(--width) * -7));
+      }
+
+      .cub {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: calc(var(--height) / 2);
+        width: calc(var(--cubWidth) * var(--width));
+        background-color: #55bb8a;
+      }
+
+      .right {
+        animation: right 1s linear forwards infinite;
+      }
+      .left {
+        animation: left 1s linear forwards infinite;
+      }
+      @keyframes left {
+        100% {
+          transform: translateX(calc(var(--width) / 2 * -1 * 6));
+        }
+      }
+      @keyframes right {
+        100% {
+          transform: translateX(calc(var(--width) / 2 * 6));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 实现 EwaAndH.gif -->
+    <div class="main">
+      <div class="box">
+        <div class="top">
+          <div class="cub cub1"></div>
+          <div class="cub cub2"></div>
+          <div class="cub cub3"></div>
+          <div class="cub cub4"></div>
+          <div class="cub cub5"></div>
+        </div>
+
+        <div class="bottom">
+          <div class="cub cub6"></div>
+          <div class="cub cub7"></div>
+          <div class="cub cub8"></div>
+          <div class="cub cub9"></div>
+          <div class="cub cub10"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("click", () => {
+        const cub1 = document.querySelector(".cub1");
+        const cub2 = document.querySelector(".cub2");
+        const cub3 = document.querySelector(".cub3");
+        const cub4 = document.querySelector(".cub4");
+        const cub5 = document.querySelector(".cub5");
+        const cub6 = document.querySelector(".cub6");
+        const cub7 = document.querySelector(".cub7");
+        const cub8 = document.querySelector(".cub8");
+        const cub9 = document.querySelector(".cub9");
+        const cub10 = document.querySelector(".cub10");
+
+        cub1.classList.add("left");
+        cub2.classList.add("left");
+        cub3.classList.add("left");
+        cub4.classList.add("left");
+        cub5.classList.add("left");
+
+        cub6.classList.add("right");
+        cub7.classList.add("right");
+        cub8.classList.add("right");
+        cub9.classList.add("right");
+        cub10.classList.add("right");
+      });
+    </script>
+  </body>
+</html>

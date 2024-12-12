@@ -11,6 +11,7 @@ import { CellDataModel } from "./Models/CellData";
 import { ConfigMergeModel } from "./Models/ConfigMerge";
 import { ConfigBorderModel } from "./Models/ConfigBorder";
 import { ConfigHiddenAndLenModel } from "./Models/ConfigHiddenAndLen";
+import { ImageModel } from "./Models/Image";
 
 (async () => {
   const { host, database, user, password } = SQL_CONFIG;
@@ -30,6 +31,7 @@ import { ConfigHiddenAndLenModel } from "./Models/ConfigHiddenAndLen";
     ConfigMergeModel.registerModule(sequelize);
     ConfigBorderModel.registerModule(sequelize);
     ConfigHiddenAndLenModel.registerModule(sequelize);
+    ImageModel.registerModule(sequelize);
 
     // 2. 同步模型 (非强制同步)
     await sequelize.sync({ alter: true });

@@ -5,6 +5,7 @@ import { logger } from "./Utils/Logger";
 import { SERVER_PORT, WORKER_BOOK_INFO } from "./Config";
 import { createWebSocketServer } from "./WebSocket/index"; // 导入 ws
 import { WorkerBookService } from "./Service/WorkerBook";
+import path from "path";
 
 (async () => {
   logger.info("✨ ");
@@ -13,6 +14,12 @@ import { WorkerBookService } from "./Service/WorkerBook";
 
   /** 创建http服务 */
   const app = express();
+
+  // 托管静态资源
+  app.use(express.static(path.resolve(__dirname, "../public")));
+  app.use(express.static(path.resolve(__dirname, "../public/dist")));
+  app.use(express.static(path.resolve(__dirname, "../public/uploads")));
+  app.use(express.static(path.resolve(__dirname, "../public/dist/assets")));
 
   // 连接数据库 DB
   await DB.connect();

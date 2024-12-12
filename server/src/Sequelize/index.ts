@@ -12,6 +12,7 @@ import { ConfigBorderModel } from "./Models/ConfigBorder";
 import { ConfigHiddenAndLenModel } from "./Models/ConfigHiddenAndLen";
 import { ConfigMergeModel } from "./Models/ConfigMerge";
 import { WorkerSheetModel } from "./Models/WorkerSheet";
+import { ImageModel } from "./Models/Image";
 
 class DataBase {
   private _connected: boolean = false; // 连接状态
@@ -69,6 +70,7 @@ class DataBase {
     ConfigMergeModel.registerModule(this._sequelize);
     ConfigBorderModel.registerModule(this._sequelize);
     ConfigHiddenAndLenModel.registerModule(this._sequelize);
+    ImageModel.registerModule(this._sequelize);
   }
 
   /**

@@ -180,6 +180,15 @@ export const SERVER_URL = "http://localhost:9000";
 export const WS_SERVER_URL = "ws://127.0.0.1:9000";
 ```
 
+## 源码UI重构
+1. 源码UI重构，请查阅 [Luckysheet-source-recover-style](/Luckysheet-source/src/css/recover.css)
+2. UI效果：
+<p align="center">
+  <img src='/public/UI/example.gif' />
+</p>
+
+
+
 ## 模型修改及同步说明
 **详情请查阅[Sequelize](https://www.sequelize.cn/core-concepts/getting-started)**
 
@@ -249,6 +258,7 @@ XxxModel.sync({ alter: true }); // 这将检查数据库中表的当前状态(�
 ... 请查阅 [ConfigBorderModel](/server/src/Sequelize/Models/ConfigBorderInfos.ts)
 
 ... 请查阅 [ConfigHiddenAndLenModel](/server/src/Sequelize/Models/ConfigHiddenAndLen.ts)
+
 
 
 ## 开源贡献

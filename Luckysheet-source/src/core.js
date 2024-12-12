@@ -8,14 +8,14 @@ import luckysheetConfigsetting from './controllers/luckysheetConfigsetting';
 import sheetmanage from './controllers/sheetmanage';
 import luckysheetsizeauto from './controllers/resize';
 import luckysheetHandler from './controllers/handler';
-import {initialFilterHandler} from './controllers/filter';
-import {initialMatrixOperation} from './controllers/matrixOperation';
-import {initialSheetBar} from './controllers/sheetBar';
-import {formulaBarInitial} from './controllers/formulaBar';
-import {rowColumnOperationInitial} from './controllers/rowColumnOperation';
-import {keyboardInitial} from './controllers/keyboard';
-import {orderByInitial} from './controllers/orderBy';
-import {initPlugins} from './controllers/expendPlugins';
+import { initialFilterHandler } from './controllers/filter';
+import { initialMatrixOperation } from './controllers/matrixOperation';
+import { initialSheetBar } from './controllers/sheetBar';
+import { formulaBarInitial } from './controllers/formulaBar';
+import { rowColumnOperationInitial } from './controllers/rowColumnOperation';
+import { keyboardInitial } from './controllers/keyboard';
+import { orderByInitial } from './controllers/orderBy';
+import { initPlugins } from './controllers/expendPlugins';
 import {
     getluckysheetfile,
     getluckysheet_select_save,
@@ -30,8 +30,8 @@ import { luckysheetlodingHTML } from './controllers/constant';
 import { getcellvalue, getdatabyselection } from './global/getdata';
 import { setcellvalue } from './global/setdata';
 import { selectHightlightShow } from './controllers/select';
-import {zoomInitial} from './controllers/zoom';
-import {printInitial} from './controllers/print';
+import { zoomInitial } from './controllers/zoom';
+import { printInitial } from './controllers/print';
 import method from './global/method';
 
 import * as api from './global/api';
@@ -39,7 +39,7 @@ import * as api from './global/api';
 import flatpickr from 'flatpickr'
 import Mandarin from 'flatpickr/dist/l10n/zh.js'
 import { initListener } from './controllers/listener';
-import { hideloading, showloading } from './global/loading.js';
+import { hideloading, showloading,setloadingcolor } from './global/loading.js';
 import { luckysheetextendData } from './global/extend.js';
 
 let luckysheet = {};
@@ -48,7 +48,7 @@ let luckysheet = {};
 // luckysheet.api = api;
 // Object.assign(luckysheet, api);
 
-luckysheet = common_extend(api,luckysheet);
+luckysheet = common_extend(api, luckysheet);
 
 
 
@@ -57,8 +57,8 @@ luckysheet.create = function (setting) {
     method.destroy()
     // Store original parameters for api: toJson
     Store.toJsonOptions = {}
-    for(let c in setting){
-        if(c !== 'data'){
+    for (let c in setting) {
+        if (c !== 'data') {
             Store.toJsonOptions[c] = setting[c];
         }
     }
@@ -78,7 +78,7 @@ luckysheet.create = function (setting) {
     Store.fullscreenmode = extendsetting.fullscreenmode;
     Store.lang = extendsetting.lang; //language
     Store.allowEdit = extendsetting.allowEdit;
-    Store.limitSheetNameLength =  extendsetting.limitSheetNameLength;
+    Store.limitSheetNameLength = extendsetting.limitSheetNameLength;
     Store.defaultSheetNameMaxLength = extendsetting.defaultSheetNameMaxLength;
     Store.fontList = extendsetting.fontList;
     server.gridKey = extendsetting.gridKey;
@@ -154,20 +154,20 @@ luckysheet.create = function (setting) {
     Store.asyncLoad.push(...luckysheetConfigsetting.plugins);
 
     // Register plugins
-    initPlugins(extendsetting.plugins , extendsetting.data);
+    initPlugins(extendsetting.plugins, extendsetting.data);
 
     // Store formula information, including internationalization
     functionlist(extendsetting.customFunctions);
 
     let devicePixelRatio = extendsetting.devicePixelRatio;
-    if(devicePixelRatio == null){
+    if (devicePixelRatio == null) {
         devicePixelRatio = 1;
     }
     Store.devicePixelRatio = Math.ceil(devicePixelRatio);
 
     //loading
-    const loadingObj=luckysheetlodingHTML("#" + container)
-    Store.loadingObj=loadingObj
+    const loadingObj = luckysheetlodingHTML("#" + container)
+    Store.loadingObj = loadingObj
 
     if (loadurl == "") {
         sheetmanage.initialjfFile(menu, title);
@@ -175,7 +175,7 @@ luckysheet.create = function (setting) {
         initialWorkBook();
     }
     else {
-        $.post(loadurl, {"gridKey" : server.gridKey}, function (d) {
+        $.post(loadurl, { "gridKey": server.gridKey }, function (d) {
             let data = new Function("return " + d)();
             Store.luckysheetfile = data;
 
@@ -184,14 +184,23 @@ luckysheet.create = function (setting) {
             initialWorkBook();
 
             //需要更新数据给后台时，建立WebSocket连接
-            if(server.allowUpdate){
+            if (server.allowUpdate) {
                 server.openWebSocket();
             }
+        }).error(error => {
+            // 向上暴露错误 error 不能阻塞渲染
+            console.error('协同服务异常，请检查后重试！', error);
+            loadingObj.close()
+            sheetmanage.initialjfFile(menu, title);
+            // luckysheetsizeauto();
+            initialWorkBook();
+            showloading('协同服务异常，请检查后重试！')
+            setloadingcolor('#F56C6C')
         });
     }
 }
 
-function initialWorkBook(){
+function initialWorkBook() {
     luckysheetHandler();//Overall dom initialization
     initialFilterHandler();//Filter initialization
     initialMatrixOperation();//Right click matrix initialization

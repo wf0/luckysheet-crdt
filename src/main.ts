@@ -1,5 +1,6 @@
-import { WS_SERVER_URL } from "./config";
+import { SERVER_URL, WS_SERVER_URL } from "./config";
 import "./style/index.css";
+import { fetch } from "./axios";
 
 window.onload = initLuckysheet;
 
@@ -21,6 +22,30 @@ function initLuckysheet() {
     allowUpdate: true, // 配置协同功能
     loadUrl: "/api/loadLuckysheet?gridkey=gridkey_demo",
     updateUrl: `${WS_SERVER_URL}?type=luckysheet&userid=${id}&username=${username}&gridkey=gridkey`, // 协同服务转发服务
+
+    // 处理协同图片上传
+    uploadImage: async (file: File) => {
+      // 此处拿到的是上传的 file 对象，进行文件上传 ，配合 node 接口实现
+      const formData = new FormData();
+      formData.append("image", file);
+      const { data } = await fetch({
+        url: "/api/uploadImage",
+        method: "POST",
+        data: formData,
+      });
+      // *** 关键步骤：需要返回一个地址给 luckysheet ，用于显示图片
+      if (data.code === 200) return Promise.resolve(data.url);
+      else return Promise.resolve("image upload error");
+    },
+    // 处理上传图片的地址
+    imageUrlHandle: (url: string) => {
+      // 已经是 // http data 开头则不处理
+      if (/^(?:\/\/|(?:http|https|data):)/i.test(url)) {
+        return url;
+      }
+      // 不然拼接服务器路径
+      return SERVER_URL + url;
+    },
   };
 
   luckysheet.create(options);

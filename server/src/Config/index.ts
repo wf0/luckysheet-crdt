@@ -31,3 +31,11 @@ export const WORKER_BOOK_INFO = {
   title: "测试工作簿",
   lang: "zh",
 };
+
+
+/**
+ * 导出文件上传 Multer 配置对象
+ */
+export const MULTER_CONFIG = {
+  dest: path.resolve(__dirname, "../../public/uploads"),
+};
