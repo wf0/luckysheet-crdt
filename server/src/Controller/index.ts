@@ -1,4 +1,5 @@
-import { loadLuckysheet } from "./loadLuckysheet";
-import { uploadImage } from "./uploadImage";
+import { uploadImage } from "./Luckysheet/uploadImage";
+import { loadSheetData } from "./Luckysheet/LoadSheetData";
 
-export const Controller = { loadLuckysheet, uploadImage };
+// 统一导出控制层对象
+export const Controller = { loadSheetData, uploadImage };

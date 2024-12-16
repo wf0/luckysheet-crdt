@@ -15,7 +15,7 @@
  */
 
 import WebSocket from "ws";
-import { CustomWebSocket } from "../Interface";
+import { CustomWebSocket } from "../Interface/WebSocket";
 
 /**
  * 广播给其他客户端
@@ -28,21 +28,19 @@ export function broadcastOtherClients(
   currentClient: CustomWebSocket,
   data: string
 ) {
-  /**
-   * 根据传入的 data 进行类型处理
-   */
+  /** 根据传入的 data 进行协同回传消息类型处理 */
   const callback = getCallbackData(currentClient, data);
 
   /**
    * 请注意，此处应该做校验：
-   *  1. 协同类型是否为 luckysheet
-   *  2. 当前用户的文件ID 是否一致（同一篇文档的用户才协同）
-   *  3. 当前用户的 wid 是否一致（同一用户不发送消息）
+   *  1. 协同类型是否为 luckysheet（同一个协同服务类型才协同）
+   *  2. 当前用户的文件ID(使用 gridkey 替代 fileid) 是否一致（同一篇文档的用户才协同）
+   *  3. 当前用户的 userid 是否一致（同一用户不发送消息）
    */
   wss.clients.forEach((conn) => {
-    const { type, fileid, userid } = (<CustomWebSocket>conn).clientInfo;
+    const { type, gridkey, userid } = (<CustomWebSocket>conn).clientInfo;
     if (type !== "luckysheet") return;
-    if (fileid !== currentClient.clientInfo.fileid) return;
+    if (gridkey !== currentClient.clientInfo.gridkey) return;
     if (userid === currentClient.clientInfo.userid) return;
     // 校验通过，发送消息给客户端
     if (conn.readyState === WebSocket.OPEN) conn.send(callback);

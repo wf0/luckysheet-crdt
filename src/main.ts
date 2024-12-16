@@ -20,8 +20,10 @@ function initLuckysheet() {
     container: "luckysheetContainer",
     showinfobar: false, // 隐藏顶部的信息栏
     allowUpdate: true, // 配置协同功能
-    loadUrl: "/api/loadLuckysheet?gridkey=gridkey_demo",
+    loadUrl: "/api/loadSheetData?gridkey=gridkey_demo",
     updateUrl: `${WS_SERVER_URL}?type=luckysheet&userid=${id}&username=${username}&gridkey=gridkey`, // 协同服务转发服务
+
+    plugins: ["chart"],
 
     // 处理协同图片上传
     uploadImage: async (file: File) => {
@@ -49,9 +51,4 @@ function initLuckysheet() {
   };
 
   luckysheet.create(options);
-
-  console.group("协同客户端用户信息");
-  console.log("==> userid", id);
-  console.log("==> username", username);
-  console.groupEnd();
 }

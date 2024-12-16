@@ -39,14 +39,12 @@ import * as api from './global/api';
 import flatpickr from 'flatpickr'
 import Mandarin from 'flatpickr/dist/l10n/zh.js'
 import { initListener } from './controllers/listener';
-import { hideloading, showloading,setloadingcolor } from './global/loading.js';
+import { hideloading, showloading, setloadingcolor } from './global/loading.js';
 import { luckysheetextendData } from './global/extend.js';
 
 let luckysheet = {};
 
-// mount api
-// luckysheet.api = api;
-// Object.assign(luckysheet, api);
+
 
 luckysheet = common_extend(api, luckysheet);
 
@@ -153,8 +151,8 @@ luckysheet.create = function (setting) {
     // Store the currently used plugins for monitoring asynchronous loading
     Store.asyncLoad.push(...luckysheetConfigsetting.plugins);
 
-    // Register plugins
-    initPlugins(extendsetting.plugins, extendsetting.data);
+    // // Register plugins
+    // initPlugins(extendsetting.plugins, extendsetting.data);
 
     // Store formula information, including internationalization
     functionlist(extendsetting.customFunctions);
@@ -170,14 +168,19 @@ luckysheet.create = function (setting) {
     Store.loadingObj = loadingObj
 
     if (loadurl == "") {
+        initPlugins(extendsetting.plugins, extendsetting.data);
         sheetmanage.initialjfFile(menu, title);
         // luckysheetsizeauto();
         initialWorkBook();
     }
     else {
         $.post(loadurl, { "gridKey": server.gridKey }, function (d) {
+
             let data = new Function("return " + d)();
             Store.luckysheetfile = data;
+
+            // 协同请求到数据后，再执行 init plugin
+            initPlugins(extendsetting.plugins, data);
 
             sheetmanage.initialjfFile(menu, title);
             // luckysheetsizeauto();
@@ -187,6 +190,7 @@ luckysheet.create = function (setting) {
             if (server.allowUpdate) {
                 server.openWebSocket();
             }
+
         }).error(error => {
             // 向上暴露错误 error 不能阻塞渲染
             console.error('协同服务异常，请检查后重试！', error);

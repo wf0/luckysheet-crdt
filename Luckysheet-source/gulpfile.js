@@ -77,13 +77,13 @@ const paths = {
     staticCssImages: ['src/css/**', '!src/css/*.css'],
 
     // static resources dest
-    destStaticHtml: ['../public/libs/luckysheet'],
-    destStaticFonts: ['../public/libs/luckysheet/fonts'],
-    destStaticAssets: ['../public/libs/luckysheet/assets'],
-    destStaticImages: ['../public/libs/luckysheet/plugins/images'],
-    destStaticExpendPlugins: ['../public/libs/luckysheet/expendPlugins'],
-    destStaticDemoData: ['../public/libs/luckysheet/demoData'],
-    destStaticCssImages: ['../public/libs/luckysheet/css'],
+    destStaticHtml: ['../public/lib'],
+    destStaticFonts: ['../public/lib/fonts'],
+    destStaticAssets: ['../public/lib/assets'],
+    destStaticImages: ['../public/lib/plugins/images'],
+    destStaticExpendPlugins: ['../public/lib/expendPlugins'],
+    destStaticDemoData: ['../public/lib/demoData'],
+    destStaticCssImages: ['../public/lib/css'],
 
     //core es module
     core: ['src/**/*.js', '!src/demoData/*.js', 'src/expendPlugins/**/plugin.js', '!src/plugins/js/*.js'],
@@ -115,13 +115,13 @@ const paths = {
     concatPluginsJs: 'plugin.js',
 
     //plugins dest
-    destPluginsCss: ['../public/libs/luckysheet/plugins/css'],
-    destPlugins: ['../public/libs/luckysheet/plugins'],
-    destCss: ['../public/libs/luckysheet/css'],
-    destPluginsJs: ['../public/libs/luckysheet/plugins/js'],
+    destPluginsCss: ['../public/lib/plugins/css'],
+    destPlugins: ['../public/lib/plugins'],
+    destCss: ['../public/lib/css'],
+    destPluginsJs: ['../public/lib/plugins/js'],
 
     // Package directory
-    dist: '../public/libs/luckysheet',
+    dist: '../public/lib',
 };
 
 // Clear the dist directory
@@ -195,7 +195,7 @@ async function core_rollup() {
     });
 
     bundle.write({
-        file: '../public/libs/luckysheet//luckysheet.umd.js',
+        file: '../public/lib/luckysheet.umd.js',
         format: 'umd',
         name: 'luckysheet',
         sourcemap: true,
@@ -205,7 +205,7 @@ async function core_rollup() {
 
     if (production) {
         bundle.write({
-            file: '../public/libs/luckysheet//luckysheet.esm.js',
+            file: '../public/lib/luckysheet.esm.js',
             format: 'esm',
             name: 'luckysheet',
             sourcemap: true,
@@ -227,7 +227,7 @@ async function core() {
         banner: { js: banner },
         target: ['es2015'],
         sourcemap: true,
-        outfile: '../public/libs/luckysheet/luckysheet.umd.js',
+        outfile: '../public/lib/luckysheet.umd.js',
     })
 }
 

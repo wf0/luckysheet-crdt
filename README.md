@@ -9,6 +9,8 @@
   <img src='/public/result.gif' />
 </p>
 
+
+
 ## 项目说明
 1. 本项目基于 [Luckysheet](https://github.com/mengshukeji/Luckysheet) 实现，感谢原作者开源。
 2. 本项目主要**实现协同功能**模块，对其他内容无影响，基于源码修改的部分，均体现在`Luckysheet-source` 文件夹下。
@@ -90,15 +92,13 @@ npm run db
 
 ```js
 // 原作者开源项目源码
-// 修改了源码打包路径，指向项目根路径 public/libs/luckysheet
+// 修改了源码打包路径，指向项目根路径 public/libs
 - Luckysheet-source 
 
 // 本项目后台服务
 - server 
-    + public // 静态资源
-    + src // 项目源码
-        + Config // 项目配置文件：端口、SQL、LOG 等配置
-        + Interface // 接口类型文件
+    + public // 静态资源 （图片协同存储地址）
+    + src 
         + Config // 项目配置文件：端口、SQL、LOG 等配置
         + Interface // 接口类型文件
         + Meddleware // 中间件
@@ -107,13 +107,9 @@ npm run db
             + Models // 数据模型
             + index.ts // 数据库连接
             + synchronization.ts // 数据库表同步脚本
-            + synchronization.ts // 数据库表同步脚本
         + Service // 业务逻辑
         + Utils // 工具类
         + WebSocket // websocket服务
-            + broadcast.ts // 处理广播消息
-            + database.ts // 数据库操作
-            + index.ts // websocket服务入口文件
             + broadcast.ts // 处理广播消息
             + database.ts // 数据库操作
             + index.ts // websocket服务入口文件
@@ -127,6 +123,7 @@ npm run db
     + main.ts // 前台项目主程序
 ```
 
+<!-- 
 ## WebSocketServer 参数说明
 
 ```ts
@@ -152,7 +149,7 @@ const wss = new WebSocketServer({ server });
    const server = http.createServer(this);
    return server.listen.apply(server, arguments);
  };
-```
+``` -->
 
 ## 服务端口说明
 1. 前台服务端口：`5000`
@@ -160,19 +157,19 @@ const wss = new WebSocketServer({ server });
 3. 数据库服务端口：`3306`
 
 ```js
-// 1. 后台服务端口配置：server/src/Config/index.ts
+// 1️⃣ 后台服务端口配置：server/src/Config/index.ts
 export const SERVER_PORT = 9000;
-
-// 2. 数据库服务端口配置：server/src/Config/index.ts
+```
+```js
+// 2️⃣ 数据库服务端口配置：server/src/Config/index.ts
 export const SQL_CONFIG = {
   port: 3306,
-  host: "127.0.0.1", // localhost or 127.0.0.1
-  database: "luckysheet_crdt",
-  user: "root",
-  password: "root",
+  // ... other config
 };
 
-// 3. 前台服务端口配置：src/config/index.ts
+```
+```js
+// 3️⃣ 前台服务端口配置：src/config/index.ts
 // 导出后台服务地址
 export const SERVER_URL = "http://localhost:9000";
 
@@ -180,13 +177,12 @@ export const SERVER_URL = "http://localhost:9000";
 export const WS_SERVER_URL = "ws://127.0.0.1:9000";
 ```
 
-## 源码UI重构
+## 页面UI重构
 1. 源码UI重构，请查阅 [Luckysheet-source-recover-style](/Luckysheet-source/src/css/recover.css)
 2. UI效果：
 <p align="center">
-  <img src='/public/UI/example.gif' />
+  <img src='/public/example.gif' />
 </p>
-
 
 
 ## 模型修改及同步说明
@@ -237,7 +233,7 @@ XxxModel.sync({ alter: true }); // 这将检查数据库中表的当前状态(�
 ## 数据库表模型结构
 
 
-~~项目将不再提供 fileid 作为关联文件字段，详细介绍请查阅下列说明：~~
+ℹ️ 项目将不再提供 fileid 作为关联文件字段，详细介绍请查阅下列说明：
 
 1. luckysheet 数据结构中，并无fileid字段，而是通过 gridKey 关联文件；
 2. fileid 字段，是为了用户在系统中关联 excel 文件，实现自定义文件标记；
@@ -246,23 +242,26 @@ XxxModel.sync({ alter: true }); // 这将检查数据库中表的当前状态(�
 
 **⛔️ gridKey 作用等价于 fileid**
 
-... 请查阅 [WorkerBookModel](/server/src/Sequelize/Models/WorkerBook.ts)
+具体模型表详见：
 
-... 请查阅 [WorkerSheetModel](/server/src/Sequelize/Models/WorkerSheet.ts)
+[WorkerBookModel](/server/src/Sequelize/Models/WorkerBook.ts)
 
+[WorkerSheetModel](/server/src/Sequelize/Models/WorkerSheet.ts)
 
-... 请查阅 [CellDataModel](/server/src/Sequelize/Models/CellData.ts)
+[CellDataModel](/server/src/Sequelize/Models/CellData.ts)
 
-... 请查阅 [ConfigMergeModel](/server/src/Sequelize/Models/ConfigMerge.ts)
+[MergeModel](/server/src/Sequelize/Models/Merge.ts)
 
-... 请查阅 [ConfigBorderModel](/server/src/Sequelize/Models/ConfigBorderInfos.ts)
+[BorderInfoModel](/server/src/Sequelize/Models/BorderInfo.ts)
 
-... 请查阅 [ConfigHiddenAndLenModel](/server/src/Sequelize/Models/ConfigHiddenAndLen.ts)
+[HiddenAndLenModel](/server/src/Sequelize/Models/HiddenAndLen.ts)
+
+[imageModel](/server/src/Sequelize/Models/Image.ts)
 
 
 
 ## 开源贡献
 1. 提交 [issue](https://gitee.com/wfeng0/luckysheet-crdt/issues/new)
 2. fork 本项目，提交 PR
-3. 加入交流群：`QQ: 522121825`
-4. 联系作者：`VX: 18276861941`
+3. 加入交流群：`Q: 522121825`
+4. 联系作者：`V: 18276861941`

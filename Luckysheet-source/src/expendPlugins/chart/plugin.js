@@ -9,23 +9,30 @@ import { rowLocation, colLocation, mouseposition } from '../../global/location'
 import { setluckysheet_scroll_status } from '../../methods/set'
 import {
     luckysheetMoveHighlightCell,
-    luckysheetMoveHighlightCell2, 
+    luckysheetMoveHighlightCell2,
     luckysheetMoveHighlightRange,
     luckysheetMoveHighlightRange2,
     luckysheetMoveEndCell
 } from '../../controllers/sheetMove';
 import { isEditMode } from '../../global/validate';
 import luckysheetsizeauto from '../../controllers/resize';
+import server from '../../controllers/server';
 let _rowLocation = rowLocation
 let _colLocation = colLocation
 
 // Dynamically load dependent scripts and styles
 const dependScripts = [
-    'https://cdn.jsdelivr.net/npm/vue@2.6.11',
-    'https://unpkg.com/vuex@3.4.0',
-    'https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js',
-    'https://cdn.bootcdn.net/ajax/libs/echarts/4.8.0/echarts.min.js',
+    // 'https://cdn.jsdelivr.net/npm/vue@2.6.11',
+    'expendPlugins/libs/vue@2.6.11.min.js',
+    'expendPlugins/libs/vuex.min.js',
+    'expendPlugins/libs/elementui.min.js',
+    'expendPlugins/libs/echarts.min.js',
     'expendPlugins/chart/chartmix.umd.min.js',
+    // 'https://unpkg.com/vuex@3.4.0',
+    // 'https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js',
+    // 'https://cdn.bootcdn.net/ajax/libs/echarts/4.8.0/echarts.min.js',
+    // 'expendPlugins/chart/chartmix.umd.min.js',
+
     // 'http://26.26.26.1:8000/chartmix.umd.js'
 ]
 
@@ -41,11 +48,13 @@ function chart(data, isDemo) {
 
     seriesLoadScripts(dependScripts, null, function () {
         const store = new Vuex.Store()
-        console.info('chartmix::', chartmix.default)
+        console.group("chartmix 加载完成");
+        console.info(chartmix.default);
+        console.groupEnd();
 
         Vue.use(chartmix.default, { store })
         let outDom = document.getElementsByTagName('body')[0]
-        chartmix.default.initChart(outDom, chartInfo.lang)
+        chartmix.default.initChart(outDom, chartInfo.lang === 'zh' ? "ch" : chartInfo.lang)
 
         $('.chartSetting').css({
             top: '1px',
@@ -87,7 +96,7 @@ function chart(data, isDemo) {
         // Initialize the rendering chart
         for (let i = 0; i < data.length; i++) {
             // if (data[i].status == '1') {
-                renderCharts(data[i].chart, isDemo)
+            renderCharts(data[i].chart, isDemo)
             // }
         }
 
@@ -98,16 +107,15 @@ function chart(data, isDemo) {
         }
 
         // After the chart is loaded, mark it
-        arrayRemoveItem(chartInfo.asyncLoad,'chart');
+        arrayRemoveItem(chartInfo.asyncLoad, 'chart');
 
     });
 }
 
 // rendercharts
 function renderCharts(chartLists, isDemo) {
-
     // no chart
-    if(chartLists == undefined){
+    if (chartLists == undefined) {
         return;
     }
 
@@ -138,7 +146,6 @@ function renderCharts(chartLists, isDemo) {
 
         let container = document.getElementById(chart_id_c)
 
-
         let chart_json
         chart_json = chartInfo.chartparam.getChartJson(chart.chart_id)
 
@@ -166,69 +173,68 @@ function renderCharts(chartLists, isDemo) {
             e.stopPropagation()
         })
         $t.mousedown(function (e) {  // move chart
+            if (!chartInfo.chartparam.luckysheetCurrentChartMaxState) {
+                //当前图表显示区域高亮
+                showNeedRangeShow(chart_id);
+                setluckysheet_scroll_status(true);
 
-                if (!chartInfo.chartparam.luckysheetCurrentChartMaxState) {
-                    //当前图表显示区域高亮
-                    showNeedRangeShow(chart_id);
-                    setluckysheet_scroll_status(true);
+                //允许拖动渲染框
+                if (
+                    !$(e.target).is(".luckysheet-modal-dialog-controll") &&
+                    !$(e.target).is(".luckysheet-modal-controll-btn") &&
+                    !$(e.target).is("i")
+                ) {
+                    // Debounce
+                    chartInfo.chartparam.luckysheetCurrentChartMoveTimeout = setTimeout(
+                        function () {
+                            chartInfo.chartparam.luckysheetCurrentChartMove = true;
+                        },
+                        100
+                    );
+                }
 
-                    //允许拖动渲染框
-                    if (
-                        !$(e.target).is(".luckysheet-modal-dialog-controll") &&
-                        !$(e.target).is(".luckysheet-modal-controll-btn") &&
-                        !$(e.target).is("i")
-                    ) {
-                        // Debounce
-                        chartInfo.chartparam.luckysheetCurrentChartMoveTimeout = setTimeout(
-                            function () {
-                                chartInfo.chartparam.luckysheetCurrentChartMove = true;
-                            },
-                            100
-                        );
-                    }
+                var toffset = chartInfo.chartparam.luckysheetCurrentChartMoveObj.offset();
+                var tpsition = chartInfo.chartparam.luckysheetCurrentChartMoveObj.position();
+                //luckysheetCurrentChartMoveXy: [鼠标点相对chart框的距离X方向，鼠标点相对chart框的距离Y方向，chart框相对cell-main的距离X方向，chart框相对cell-main的距离Y方向，水平滚动条的位置，垂直滚动条的位置]
+                chartInfo.chartparam.luckysheetCurrentChartMoveXy = [
+                    e.pageX - toffset.left,
+                    e.pageY - toffset.top,
+                    tpsition.left,
+                    tpsition.top,
+                    $("#luckysheet-scrollbar-x").scrollLeft(),
+                    $("#luckysheet-scrollbar-y").scrollTop()
+                ];
+                chartInfo.chartparam.luckysheetCurrentChartMoveWinH = $(
+                    "#luckysheet-cell-main"
+                )[0].scrollHeight;
+                chartInfo.chartparam.luckysheetCurrentChartMoveWinW = $(
+                    "#luckysheet-cell-main"
+                )[0].scrollWidth;
 
-                    var toffset = chartInfo.chartparam.luckysheetCurrentChartMoveObj.offset();
-                    var tpsition = chartInfo.chartparam.luckysheetCurrentChartMoveObj.position();
-                    //luckysheetCurrentChartMoveXy: [鼠标点相对chart框的距离X方向，鼠标点相对chart框的距离Y方向，chart框相对cell-main的距离X方向，chart框相对cell-main的距离Y方向，水平滚动条的位置，垂直滚动条的位置]
-                    chartInfo.chartparam.luckysheetCurrentChartMoveXy = [
-                        e.pageX - toffset.left,
-                        e.pageY - toffset.top,
-                        tpsition.left,
-                        tpsition.top,
-                        $("#luckysheet-scrollbar-x").scrollLeft(),
-                        $("#luckysheet-scrollbar-y").scrollTop()
-                    ];
-                    chartInfo.chartparam.luckysheetCurrentChartMoveWinH = $(
-                        "#luckysheet-cell-main"
-                    )[0].scrollHeight;
-                    chartInfo.chartparam.luckysheetCurrentChartMoveWinW = $(
-                        "#luckysheet-cell-main"
-                    )[0].scrollWidth;
-
-                    if (
-                        !$(e.target).hasClass("luckysheet-mousedown-cancel") &&
-                        $(e.target).filter("[class*='sp-palette']").length == 0 &&
-                        $(e.target).filter("[class*='sp-thumb']").length == 0 &&
-                        $(e.target).filter("[class*='sp-']").length == 0
-                    ) {
-                        $("#luckysheet-rightclick-menu").hide();
-                        $("#luckysheet-cols-h-hover").hide();
-                        $("#luckysheet-cols-menu-btn").hide();
-                        $("#luckysheet-rightclick-menu").hide();
-                        $(
-                            "#luckysheet-sheet-list, #luckysheet-rightclick-sheet-menu, #luckysheet-user-menu"
-                        ).hide();
-                        $(
-                            "body > .luckysheet-filter-menu, body > .luckysheet-filter-submenu, body > .luckysheet-cols-menu"
-                        ).hide();
-
-                    }
-
-                    e.stopPropagation();
+                if (
+                    !$(e.target).hasClass("luckysheet-mousedown-cancel") &&
+                    $(e.target).filter("[class*='sp-palette']").length == 0 &&
+                    $(e.target).filter("[class*='sp-thumb']").length == 0 &&
+                    $(e.target).filter("[class*='sp-']").length == 0
+                ) {
+                    $("#luckysheet-rightclick-menu").hide();
+                    $("#luckysheet-cols-h-hover").hide();
+                    $("#luckysheet-cols-menu-btn").hide();
+                    $("#luckysheet-rightclick-menu").hide();
+                    $(
+                        "#luckysheet-sheet-list, #luckysheet-rightclick-sheet-menu, #luckysheet-user-menu"
+                    ).hide();
+                    $(
+                        "body > .luckysheet-filter-menu, body > .luckysheet-filter-submenu, body > .luckysheet-cols-menu"
+                    ).hide();
 
                 }
 
-            }).find(".luckysheet-modal-dialog-resize-item")
+                e.stopPropagation();
+
+            }
+
+        }).find(".luckysheet-modal-dialog-resize-item")
             .mousedown(function (e) {
                 if (chartInfo.chartparam.luckysheetCurrentChartActive) {
                     chartInfo.chartparam.luckysheetCurrentChartResize = $(this).data("type"); //开始状态resize
@@ -1062,7 +1068,7 @@ function chart_selection() {
 }
 
 // create chart
-function createLuckyChart(width, height, left, top) {
+function createLuckyChart(width, height, left, top,) {
     //如果只选中一个单元格，则自动填充选取
     var jfgird_select_save = luckysheet.getluckysheet_select_save();
     if (
@@ -1109,7 +1115,7 @@ function createLuckyChart(width, height, left, top) {
     }
 
     jfgird_select_save[0]["row"] = [shiftpositon_row, shiftpositon_row];
-    jfgird_select_save[0].row_focus =shiftpositon_row;
+    jfgird_select_save[0].row_focus = shiftpositon_row;
     luckysheet.setluckysheet_select_save(jfgird_select_save);
 
     chartInfo.luckysheet_shiftpositon = $.extend(true, {}, jfgird_select_save[0]);
@@ -1157,7 +1163,7 @@ function createLuckyChart(width, height, left, top) {
 
     var rangeTxt = getRangetxt(chartInfo.currentSheetIndex, rangeArray[0], chartInfo.currentSheetIndex)
 
-
+    console.log("==>rangeArray ", rangeArray);
     let chartData = getdatabyselection()
     console.dir(chartData)
 
@@ -1181,7 +1187,7 @@ function createLuckyChart(width, height, left, top) {
 
     let { render, chart_json } = chartInfo.createChart($(`#${chart_id_c}`).children('.luckysheet-modal-dialog-content')[0], chartData, chart_id, rangeArray, rangeTxt)
     // chartInfo.currentChart = chart_json.chartOptions
-    console.dir(JSON.stringify(chart_json))
+
 
     width = width ? width : 400
     height = height ? height : 250
@@ -1333,6 +1339,11 @@ function createLuckyChart(width, height, left, top) {
 
             }
         })
+
+    // 创建统计图之后，发送协同数据
+    const v = { chart_id, width, height, left, top, sheetIndex: sheetFile.index, needRangeShow: false, chartOptions: chart_json.chartOptions, chartData }
+    console.log("==> 图表协同 :新建图表", v);
+    server.saveParam('c', sheetFile.index, v, { "op": "add", "cid": chart_id })
 }
 
 /**
@@ -1340,21 +1351,21 @@ function createLuckyChart(width, height, left, top) {
  * @param {JQuery} $container 图表的容器DIV
  */
 function setChartMoveableEffect($container) {
-  $container.find('.luckysheet-modal-dialog-content').hover(function () {
-    $container.removeClass("chart-moveable");
-  }, function () {
-    $container.addClass("chart-moveable");
-  });
+    $container.find('.luckysheet-modal-dialog-content').hover(function () {
+        $container.removeClass("chart-moveable");
+    }, function () {
+        $container.addClass("chart-moveable");
+    });
 
-  $container.hover(function () {
-    $container.addClass("chart-moveable");
-  }, function () {
-    $container.removeClass("chart-moveable");
-  });
+    $container.hover(function () {
+        $container.addClass("chart-moveable");
+    }, function () {
+        $container.removeClass("chart-moveable");
+    });
 }
 
 // delete chart
-function delChart(chart_id) {
+function delChart(chart_id,) {
     // delete container
     $(`.luckysheet-cell-main #${chart_id}_c`).remove()
 
@@ -1367,6 +1378,10 @@ function delChart(chart_id) {
     sheetFile.chart.splice(index, 1)
     // api call
     chartInfo.deleteChart(chart_id)
+
+    console.log("==> 图表协同 :删除图表", chart_id);
+    server.saveParam('c', sheetFile.index, { "chart_id": chart_id }, { "op": "del", "cid": chart_id })
+
 }
 
 //设置某个图表的高亮区域状态为显示,处理当前页的所有图表，只取一个图表设置为显示，其他隐藏，其他页不管
@@ -1407,7 +1422,6 @@ function hideAllNeedRangeShow() {
 
 //选择区域高亮
 function selectRangeBorderShow(chart_id) {
-
     let $t = $('#' + chart_id + '_c')
 
     // Highlight of data range
@@ -1494,6 +1508,8 @@ function hideChartSettingComponent(refresh) {
         }
 
     }
+
+    console.log("==> hideChartSettingComponent",);
 }
 
 // 隐藏其他sheet的图表，显示当前sheet的图表 chartMix 切换sheet页显示隐藏图表
@@ -1538,4 +1554,4 @@ function renderChartShow(index) {
 
 }
 
-export { chart, createLuckyChart, hideAllNeedRangeShow, renderChartShow }
+export { chart, createLuckyChart, showNeedRangeShow, hideAllNeedRangeShow, renderChartShow, delChart, setChartMoveableEffect, selectRangeBorderShow, showChartSettingComponent }

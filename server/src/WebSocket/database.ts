@@ -26,68 +26,21 @@
  * 注意一点，对象中的i为当前sheet的index值，而不是order
  */
 
-import { CellDataModelType } from "../Sequelize/Models/CellData";
-import { ConfigBorderModelType } from "../Sequelize/Models/ConfigBorder";
-import { ConfigHiddenAndLenModelType } from "../Sequelize/Models/ConfigHiddenAndLen";
-import { CellDataService } from "../Service/CellData";
-import { ConfigBorderService } from "../Service/ConfigBorder";
-import { configHiddenAndLenService } from "../Service/ConfigHiddenAndLen";
-import { ConfigMergeService } from "../Service/ConfigMerge";
-import { ImageService } from "../Service/Image";
 import { isEmpty } from "../Utils";
 import { logger } from "../Utils/Logger";
-
-type OperateDataV = {
-  ct: {
-    //单元格值格式
-    fa: string; //格式名称为自动格式
-    t: string; //格式类型为数字类型
-  };
-  v: string; //内容的原始值为 233
-  m: string; //内容的显示值为 233
-  bg: string; //背景为 "#f6b26b"
-  ff: string | number; // 字体为 "Arial"
-  fc: string; //字体颜色为 "#990000"
-  bl: number | boolean; //字体加粗
-  it: number | boolean; //字体斜体
-  un: number | boolean;
-  fs: number | string; //字体大小为 9px
-  cl: number | boolean; //启用删除线
-  ht: number; //水平居中
-  vt: number; //垂直居中
-  tr: number; //文字旋转 -45°
-  tb: number; //文本自动换行
-  f: string; // 公式为 "=SUM(A1:A5)"
-  ps: {
-    //批注
-    left: number; //批注框左边距
-    top: number; //批注框上边距
-    width: number; //批注框宽度
-    height: number; //批注框高度
-    value: string; //批注内容
-    isshow: boolean; //批注框为显示状态
-  };
-};
-// 定义协同操作数据类型
-type OperateData = {
-  t: string; // 操作类型
-  i: string; // 当前sheet的index值，而不是order
-  r?: number; // 行号
-  c?: number; // 列号
-  rc?: string; // 行列号
-  op?: string; // 操作类型
-  name?: string; // 工作簿名称
-  order?: number; // sheet的order值
-  v?: OperateDataV; // 单元格数据
-  range?: {
-    row: number[];
-    column: number[];
-  };
-  k?: string;
-};
+import { ImageService } from "../Service/Image";
+import { MergeService } from "../Service/Merge";
+import { BorderInfoService } from "../Service/Border";
+import { CellDataService } from "../Service/CellData";
+import { HiddenAndLenService } from "../Service/HiddenAndLen";
+import { CellDataModelType } from "../Sequelize/Models/CellData";
+import { BorderInfoModelType } from "../Sequelize/Models/BorderInfo";
+import { HiddenAndLenModelType } from "../Sequelize/Models/HiddenAndLen";
+import { CG, CHART, CRDTDataType, MERGE, RV, V } from "../Interface/WebSocket";
+import { ChartService } from "../Service/Chart";
 
 /**
- * 数据库操作
+ * 协同消息映射的操作
  * @param data
  */
 export function databaseHandler(data: string) {
@@ -106,7 +59,8 @@ export function databaseHandler(data: string) {
   if (t === "shd") shd(data);
   if (t === "shre") shre(data);
   if (t === "shr") shr(data);
-  //   if (t === "shs") shs(data: OperateData); // 切换到指定 sheet 是前台操作，可不存储数据库
+  if (t === "c") c(data);
+  //   if (t === "shs") shs(data); // 切换到指定 sheet 是前台操作，可不存储数据库
   if (t === "sh") sh(data);
   if (t === "na") na(data);
 }
@@ -114,7 +68,7 @@ export function databaseHandler(data: string) {
 // 单个单元格刷新
 async function v(data: string) {
   // 1. 解析 rc 单元格
-  const { t, r, c, v, i } = <OperateData>JSON.parse(data);
+  const { t, r, c, v, i } = <CRDTDataType<V>>JSON.parse(data);
   logger.info("[CRDT DATA]:", data);
 
   // 纠错判断
@@ -216,20 +170,11 @@ async function v(data: string) {
 
 // 范围单元格刷新
 async function rv(data: string) {
-  type OperateRVData = {
-    t: string;
-    i: string;
-    range: {
-      row: number[];
-      column: number[];
-    };
-    v: OperateDataV[][];
-  };
   /**
    * 范围单元格刷新
    * 需要先取 range 范围行列数，v 的内容是根据 range 循环而来
    */
-  const { t, i, v, range } = <OperateRVData>JSON.parse(data);
+  const { t, i, v, range } = <CRDTDataType<RV>>JSON.parse(data);
   if (t !== "rv") return logger.error("t is not rv.");
   if (isEmpty(i)) return logger.error("i is undefined.");
   if (isEmpty(range)) return logger.error("range is undefined.");
@@ -254,8 +199,8 @@ async function rv(data: string) {
         f: item.f || "",
         ctfa: item.ct?.fa,
         ctt: item.ct?.t,
-        v: item.v || "",
-        m: item.m || "",
+        v: <string>item.v || "",
+        m: <string>item.m || "",
         bg: item?.bg,
         bl: <boolean>item?.bl,
         cl: <boolean>item?.cl,
@@ -286,7 +231,7 @@ async function rv(data: string) {
 // config操作
 async function cg(data: string) {
   logger.info("[CRDT DATA]:", data);
-  const { t, i, v, k } = <OperateData>JSON.parse(data);
+  const { t, i, v, k } = <CRDTDataType<CG>>JSON.parse(data);
 
   if (t !== "cg") return logger.error("t is not cg.");
   if (isEmpty(i)) return logger.error("i is undefined.");
@@ -310,7 +255,7 @@ async function cg(data: string) {
         // @ts-ignore
         const value = Number(v[key]);
         // 判断具体是 行还是列
-        const configInfo: ConfigHiddenAndLenModelType = {
+        const configInfo: HiddenAndLenModelType = {
           worker_sheet_id: i,
           config_index: key,
           config_type: k,
@@ -320,9 +265,9 @@ async function cg(data: string) {
         //  {"t":"cg","i":"e73f971d-606f-4b04-bcf1-98550940e8e3","v":{},"k":"rowhidden"}
         // 如果是隐藏的状态，应该先删除全部的 configInfo 再创建，因为 luckysheet 前台的设计就是将当前所有的 hidden 全部传给后台，并不区分是隐藏还是取消隐藏
         if (k === "rowhidden" || k === "colhidden") {
-          await configHiddenAndLenService.deleteHidden(i, k, key);
+          await HiddenAndLenService.deleteHidden(i, k, key);
         }
-        await configHiddenAndLenService.create(configInfo);
+        await HiddenAndLenService.create(configInfo);
       }
     }
   }
@@ -332,26 +277,16 @@ async function cg(data: string) {
   // {"t":"cg","i":"e73f971d......","v":[{"rangeType":"range","borderType":"border-all","color":"#000","style":"1","range":[{"row":[2,7],"column":[1,2],"row_focus":2,"column_focus":1,"left":74,"width":73,"top":40,"height":19,"left_move":74,"width_move":147,"top_move":40,"height_move":119,}]}],"k":"borderInfo"}
   // {"t":"cg","i":"e73f971d......","v":[{"rangeType":"range","borderType":"border-bottom","color":"#000","style":"1","range":[{"left":148,"width":73,"top":260,"height":19,"left_move":148,"width_move":73,"top_move":260,"height_move":19,"row":[13,13],"column":[2,2],"row_focus":13,"column_focus":2}]}],"k":"borderInfo"}
   if (k === "borderInfo") {
-    const borderInfo = v as unknown as {
-      rangeType: string;
-      borderType: string;
-      color: string;
-      style: string;
-      range: {
-        row: number[];
-        column: number[];
-      }[];
-    }[];
     // 处理 rangeType
-    for (let idx = 0; idx < borderInfo.length; idx++) {
-      const border = borderInfo[idx];
+    for (let idx = 0; idx < v.length; idx++) {
+      const border = v[idx];
       const { rangeType, borderType, color, style, range } = border;
       // 这里能拿到 i range 判断是否存在
       // declare row_start?: number;
       // declare row_end?: number;
       // declare col_start?: number;
       // declare col_end?: number;
-      const info: ConfigBorderModelType = {
+      const info: BorderInfoModelType = {
         worker_sheet_id: i,
         rangeType,
         borderType,
@@ -360,10 +295,10 @@ async function cg(data: string) {
         col_start: range[0].column[0],
         col_end: range[0].column[1],
       };
-      const exist = await ConfigBorderService.hasConfigBorder(info);
+      const exist = await BorderInfoService.hasConfigBorder(info);
       if (exist) {
         // 更新
-        await ConfigBorderService.updateConfigBorder({
+        await BorderInfoService.updateConfigBorder({
           config_border_id: exist.config_border_id,
           ...info,
           color,
@@ -371,7 +306,7 @@ async function cg(data: string) {
         });
       } else {
         // 创建新的边框记录
-        await ConfigBorderService.createConfigBorder({
+        await BorderInfoService.createConfigBorder({
           ...info,
           style: Number(style),
           color,
@@ -390,18 +325,7 @@ async function cg(data: string) {
 async function all(data: string) {
   logger.info("[CRDT DATA]:", data);
 
-  type OperateAllData = {
-    t: string;
-    i: string;
-    k: string; // frozen | name | color | config | filter_select | filter | luckysheet_alternateformat_save | luckysheet_conditionformat_save | pivotTable | dynamicArray
-    v: {
-      merge: {
-        [key: string]: { r: number; c: number; rs: number; cs: number };
-      };
-    };
-  };
-
-  const { t, i, v, k } = <OperateAllData>JSON.parse(data);
+  const { t, i, v, k } = <CRDTDataType<MERGE>>JSON.parse(data);
 
   if (t !== "all") return logger.error("t is not all.");
   if (isEmpty(i)) return logger.error("i is undefined.");
@@ -415,12 +339,12 @@ async function all(data: string) {
     // {"t":"all","i":"e73f971....","v":{"merge":{"1_0":{"r":1,"c":0,"rs":3,"cs":3},"9_1":{"r":9,"c":1,"rs":5,"cs":3}},},"k":"config"}
     // {"t":"all","i":"e73f971....","v":{"merge":{"9_1":{"r":9,"c":1,"rs":5,"cs":3}},},"k":"config"}
     // 先删除
-    await ConfigMergeService.deleteMerge(i);
+    await MergeService.deleteMerge(i);
     // 再新增
     for (const key in v.merge) {
       if (Object.prototype.hasOwnProperty.call(v.merge, key)) {
         const { r, c, rs, cs } = v.merge[key];
-        await ConfigMergeService.createMerge({
+        await MergeService.createMerge({
           worker_sheet_id: i,
           r,
           c,
@@ -474,12 +398,12 @@ async function fc(data: string) {
   console.log("==> fc", data);
 }
 
-// 删除行或列
+// 删除行或列 - 会影响 celldata r c 的值，需要更新比新增行列大/小的 r c 值
 async function drc(data: string) {
   console.log("==> drc", data);
 }
 
-// 增加行或列
+// 增加行或列 - 会影响 celldata r c 的值，需要更新比新增行列大/小的 r c 值
 async function arc(data: string) {
   console.log("==> arc", data);
 }
@@ -517,6 +441,49 @@ async function shre(data: string) {
 // 调整sheet位置
 async function shr(data: string) {
   console.log("==> shr", data);
+}
+
+// 图表操作
+async function c(data: string) {
+  logger.info("[CRDT DATA]:", data);
+  const { t, v, i, op } = <CRDTDataType<CHART>>JSON.parse(data);
+  if (t !== "c") return logger.error("t is not c.");
+  if (isEmpty(i)) return logger.error("i is undefined.");
+
+  // 所有的图表ID均由前台传递
+  // 创建图表
+  const chartInfo = {
+    worker_sheet_id: i,
+    chart_id: v.chart_id,
+    width: v.width,
+    height: v.height,
+    left: v.left,
+    top: v.top,
+    needRangeShow: v.needRangeShow,
+    chartOptions: JSON.stringify(v.chartOptions),
+  };
+  if (op === "add") {
+    await ChartService.createChart(chartInfo);
+  }
+
+  // 更新图表
+  //  {"t":"c","i":"89357e56-c6bc-4de0-bfd1-0e00b3086da4","v":{"chart_id":"chart_01ieK40e4Kal_1734335434241","left":"172.3px","top":"158.3px","scrollTop":0,"scrollLeft":0},"cid":"chart_01ieK40e4Kal_1734335434241","op":"xy"}
+  if (op === "xy" || op === "wh") {
+    await ChartService.updateChart({
+      worker_sheet_id: i,
+      chart_id: v.chart_id,
+      left: v.left,
+      top: v.top,
+      width: v.width,
+      height: v.height,
+    });
+  }
+
+  // 删除图表
+  // {"t":"c","i":"89357e56-c6bc-4de0-bfd1-0e00b3086da4","v":{"cid":"chart_WW0t3io1towN_1734335743092"},"cid":"chart_WW0t3io1towN_1734335743092","op":"del"}
+  if (op === "del") {
+    await ChartService.deleteChart(v.chart_id);
+  }
 }
 
 // sheet属性(隐藏或显示)

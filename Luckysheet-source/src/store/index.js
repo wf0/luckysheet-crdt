@@ -1,15 +1,15 @@
 const Store = {
-    container: null, 
-    loadingObj:{},
-    luckysheetfile: null, 
-    defaultcolumnNum: 60, 
-    defaultrowNum: 84, 
+    container: null,
+    loadingObj: {},
+    luckysheetfile: null,
+    defaultcolumnNum: 60,
+    defaultrowNum: 84,
     fullscreenmode: true,
     devicePixelRatio: 1,
 
     currentSheetIndex: 0,
     calculateSheetIndex: 0,
-	flowdata: [],
+    flowdata: [],
     config: {},
 
     visibledatarow: [],
@@ -27,12 +27,12 @@ const Store = {
     cellMainSrollBarSize: 12,
     sheetBarHeight: 31,
     statisticBarHeight: 23,
-    luckysheetTableContentHW: [0, 0], 
+    luckysheetTableContentHW: [0, 0],
 
     defaultcollen: 73,
     defaultrowlen: 19,
 
-    jfcountfuncTimeout: null, 
+    jfcountfuncTimeout: null,
     jfautoscrollTimeout: null,
 
     luckysheet_select_status: false,
@@ -54,7 +54,7 @@ const Store = {
     luckysheetcurrentisPivotTable: false,
 
     luckysheet_rows_selected_status: false,  //行列标题相关参
-    luckysheet_cols_selected_status: false,  
+    luckysheet_cols_selected_status: false,
     luckysheet_rows_change_size: false,
     luckysheet_rows_change_size_start: [],
     luckysheet_cols_change_size: false,
@@ -63,7 +63,7 @@ const Store = {
     luckysheet_cols_dbclick_times: 0,
 
     luckysheetCellUpdate: [],
-    
+
     luckysheet_shiftpositon: null,
 
     iscopyself: true,
@@ -103,59 +103,59 @@ const Store = {
         luckysheetCurrentChartResizeWinH: null,
         luckysheetCurrentChartResizeWinW: null,
         luckysheetInsertChartTosheetChange: true, // 正在执行撤销
-        luckysheetCurrentChartZIndexRank : 100,
-        luckysheet_chart_redo_click:false, //撤销重做时标识
+        luckysheetCurrentChartZIndexRank: 100,
+        luckysheet_chart_redo_click: false, //撤销重做时标识
         luckysheetCurrentChartMaxState: false, //图表全屏状态
         jfrefreshchartall: '',
         changeChartCellData: '',
         renderChart: '',
         getChartJson: ''
     },
-    functionList:null, //function list explanation
-    luckysheet_function:null,
+    functionList: null, //function list explanation
+    luckysheet_function: null,
     chart_selection: {},
     currentChart: '',
-    scrollRefreshSwitch:true,
+    scrollRefreshSwitch: true,
 
-    measureTextCache:{},
-    measureTextCellInfoCache:{},
-    measureTextCacheTimeOut:null,
-    cellOverflowMapCache:{},
+    measureTextCache: {},
+    measureTextCellInfoCache: {},
+    measureTextCacheTimeOut: null,
+    cellOverflowMapCache: {},
 
-    zoomRatio:1,
+    zoomRatio: 1,
 
-    visibledatacolumn_unique:null,
-    visibledatarow_unique:null,
+    visibledatacolumn_unique: null,
+    visibledatarow_unique: null,
 
-    showGridLines:true,
+    showGridLines: true,
 
     toobarObject: {}, //toolbar constant
-    inlineStringEditCache:null,
-    inlineStringEditRange:null,
+    inlineStringEditCache: null,
+    inlineStringEditRange: null,
 
-    fontList:[],
+    fontList: [],
     defaultFontSize: 10,
 
-    currentSheetView:"viewNormal",
+    currentSheetView: "viewNormal",
 
     // cooperative editing
-    cooperativeEdit:{
-        usernameTimeout:{
+    cooperativeEdit: {
+        usernameTimeout: {
 
         },
-        changeCollaborationSize:[], //改变行高或者列宽时，协同提示框需要跟随改变所需数据
-        allDataColumnlen:[],//列宽发生过改变的列
-        merge_range:{},//合并时单元格信息
-        checkoutData:[],//切换表格页时所需数据
+        changeCollaborationSize: [], //改变行高或者列宽时，协同提示框需要跟随改变所需数据
+        allDataColumnlen: [],//列宽发生过改变的列
+        merge_range: {},//合并时单元格信息
+        checkoutData: [],//切换表格页时所需数据
     },
 
     // Resources that currently need to be loaded asynchronously, especially plugins. 'Core' marks the core rendering process.
-    asyncLoad:['core'],
+    asyncLoad: ['core'],
     // 默认单元格
     defaultCell: {
         bg: null,
         bl: 0,
-        ct: {fa: "General", t: "n"},
+        ct: { fa: "General", t: "n" },
         fc: "rgb(51, 51, 51)",
         ff: 0,
         fs: 11,
