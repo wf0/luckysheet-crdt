@@ -356,6 +356,7 @@ const server = {
 
 			//通信发生错误时触发
 			_this.websocket.onerror = function () {
+				this.websocket = null
 				_this.wxErrorCount++;
 
 				if (_this.wxErrorCount > 3) {
@@ -363,6 +364,8 @@ const server = {
 				}
 				else {
 					showloading(locale().websocket.wait);
+					// 判断当前的链接状态
+					if (this.websocket) return
 					_this.openWebSocket();
 				}
 			}
@@ -897,9 +900,47 @@ const server = {
 
 		}
 		else if (type == "shr") { //sheet位置
+
 			for (let x in value) {
 				Store.luckysheetfile[getSheetIndex(x)].order = value[x];
 			}
+
+
+			let orderListMap = {};
+			(Store.luckysheetfile || []).forEach((item) => {
+				orderListMap[item.index.toString()] = item.order;
+			})
+
+			Store.luckysheetfile.sort((x, y) => {
+				let order_x = orderListMap[x.index.toString()];
+				let order_y = orderListMap[y.index.toString()];
+
+				if (order_x != null && order_y != null) {
+					return order_x - order_y;
+				}
+				else if (order_x != null) {
+					return -1;
+				}
+				else if (order_y != null) {
+					return 1;
+				}
+				else {
+					return 1;
+				}
+			})
+
+			let orders = {};
+
+			Store.luckysheetfile.forEach((item, i, arr) => {
+				arr[i].order = i;
+				orders[item.index.toString()] = i;
+
+				if (i > 0) {
+					let preIndex = arr[i - 1].index;
+					$("#luckysheet-sheets-item" + item.index).insertAfter($("#luckysheet-sheets-item" + preIndex));
+				}
+			})
+
 		}
 		else if (type == "shre") { //删除sheet恢复操作
 			for (let i = 0; i < server.sheetDeleSave.length; i++) {

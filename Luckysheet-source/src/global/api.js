@@ -5402,6 +5402,7 @@ export function setSheetMove(type, options = {}) {
  * @param {Array} orderList 工作表顺序，设置工作表的index和order来指定位置
  * @param {Object} options 可选参数
  * @param {Function} options.success 操作结束的回调函数
+ * @param {Boolean} options.broadcast 是否广播给其他客户端，默认为 true
  */
 export function setSheetOrder(orderList, options = {}) {
     if (orderList == null || orderList.length == 0) {
@@ -5443,15 +5444,19 @@ export function setSheetOrder(orderList, options = {}) {
         }
     })
 
-    server.saveParam("shr", null, orders);
+
 
     let {
-        success
+        success,
     } = { ...options }
 
     if (success && typeof success === 'function') {
         success();
     }
+
+    if (options.broadcast && options.broadcast === false) return
+    console.log("==> ",options.broadcast && options.broadcast === false);
+    server.saveParam("shr", null, orders);
 }
 
 

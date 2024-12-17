@@ -366,7 +366,7 @@ function renderChart(data) {
  */
 function updateChart(data) {
     console.log("==> updateChart", data);
-    const { chart_id, left, top, width, height } = data
+    const { chart_id, left, top, width, height, chartOptions } = data
 
     // 更新 dom 的位置即可
     let chart_id_c = chart_id + '_c'
@@ -376,6 +376,12 @@ function updateChart(data) {
     if (top) container.style.top = typeof top === 'number' ? `${top}px` : top
     if (width) container.style.width = typeof width === 'number' ? `${width}px` : width
     if (height) container.style.height = typeof height === 'number' ? `${height}px` : height
+
+    if (chartOptions) {
+        // 更新 options
+        chartInfo.chartparam.renderChart({ chart_id, chartOptions })
+
+    }
 
     // 宽高变化后，需要重绘
     chartInfo.resizeChart(chart_id)

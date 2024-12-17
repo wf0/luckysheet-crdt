@@ -36,14 +36,25 @@ import { HiddenAndLenService } from "../Service/HiddenAndLen";
 import { CellDataModelType } from "../Sequelize/Models/CellData";
 import { BorderInfoModelType } from "../Sequelize/Models/BorderInfo";
 import { HiddenAndLenModelType } from "../Sequelize/Models/HiddenAndLen";
-import { CG, CHART, CRDTDataType, MERGE, RV, V } from "../Interface/WebSocket";
+import {
+  CG,
+  CHART,
+  CRDTDataType,
+  MERGE,
+  RV,
+  SHA,
+  V,
+} from "../Interface/WebSocket";
 import { ChartService } from "../Service/Chart";
+import { WorkerSheetService } from "../Service/WorkerSheet";
+import { WorkerSheetModelType } from "../Sequelize/Models/WorkerSheet";
+import { WorkerBookService } from "../Service/WorkerBook";
 
 /**
  * 协同消息映射的操作
  * @param data
  */
-export function databaseHandler(data: string) {
+export function databaseHandler(data: string, gridKey: string) {
   const { t } = JSON.parse(data);
   if (t === "v") v(data);
   if (t === "rv") rv(data);
@@ -54,15 +65,15 @@ export function databaseHandler(data: string) {
   if (t === "arc") arc(data);
   if (t === "fsc") fsc(data);
   if (t === "fsr") fsr(data);
-  if (t === "sha") sha(data);
-  if (t === "shc") shc(data);
+  if (t === "sha") sha(data, gridKey);
+  if (t === "shc") shc(data, gridKey);
   if (t === "shd") shd(data);
   if (t === "shre") shre(data);
   if (t === "shr") shr(data);
   if (t === "c") c(data);
   //   if (t === "shs") shs(data); // 切换到指定 sheet 是前台操作，可不存储数据库
   if (t === "sh") sh(data);
-  if (t === "na") na(data);
+  if (t === "na") na(data, gridKey);
 }
 
 // 单个单元格刷新
@@ -331,8 +342,13 @@ async function all(data: string) {
   if (isEmpty(i)) return logger.error("i is undefined.");
 
   // 修改工作表名
+  //  {"t":"all","i":"12f8254d-3914-4f79-9886-9f9aec173048","v":"123","k":"name"}
   if (k === "name") {
-    // await WorkerBookService.update(i, v);
+    const info = <WorkerSheetModelType>{
+      worker_sheet_id: i,
+      name: <string>(<unknown>v),
+    };
+    await WorkerSheetService.update(info);
   } else if (k === "config") {
     // 合并单元格 - 又是一个先删除后新增的操作，由luckysheet 前台设计决定的
     // {"t":"all","i":"e73f971....","v":{"merge":{"1_0":{"r":1,"c":0,"rs":3,"cs":3}},},"k":"config"}
@@ -390,6 +406,14 @@ async function all(data: string) {
         });
       }
     }
+  } else if (k === "color") {
+    // {"t":"all","i":"62e09f1d-b294-46b5-8924-a0f1a8e011a2","v":"#ffff00","k":"color"}
+    // 更新 worker sheet color 字段即可
+    const color_info = <WorkerSheetModelType>{
+      worker_sheet_id: i,
+      color: <string>(<unknown>v),
+    };
+    await WorkerSheetService.update(color_info);
   }
 }
 
@@ -419,28 +443,103 @@ async function fsr(data: string) {
 }
 
 // 新建sheet
-async function sha(data: string) {
-  console.log("==> sha", data);
+async function sha(data: string, gridKey: string) {
+  logger.info("[CRDT DATA]:", data);
+  const { t, v } = <CRDTDataType<SHA>>JSON.parse(data);
+  if (t !== "sha") return logger.error("t is not sha.");
+  // 新建sheet 是没有i 的哈，别的操作关联 sheet 才有i
+  // 此时！这个sheet应该关联的 workerBookID 从当前协同的用户身上获取哦~因为 clientInfo 始终保留着 gridkey userid username 属性
+  // {"t":"sha","i":null,"v":{"name":"Sheet2","color":"","status":"0","order":1,"index":"Sheet_Liiwhe570zW3_1734350438656","celldata":[],"row":84,"column":60,"config":{},"pivotTable":null,"isPivotTable":false}}
+  // 新建 sheet
+  const new_sheet: WorkerSheetModelType = {
+    worker_sheet_id: v.index,
+    name: v.name,
+    gridKey,
+    order: v.order,
+    status: Number(v.status),
+    row: v.row,
+    column: v.column,
+  };
+  await WorkerSheetService.createSheet(new_sheet);
 }
 
 // 复制sheet
-async function shc(data: string) {
-  console.log("==> shc", data);
+async function shc(data: string, gridKey: string) {
+  // {"t":"shc","i":"Sheet_0NHdie3o0ba5_1734351308939","v":{"copyindex":"12f8254d-3914-4f79-9886-9f9aec173048","name":"Sheet(副本)"}}
+  // 至于复制的sheet该放在什么位置上，会同步触发 shr 事件，调整sheet的位置
+  logger.info("[CRDT DATA]:", data);
+  const { t, i, v } = <CRDTDataType<SHA>>JSON.parse(data);
+  if (t !== "shc") return logger.error("t is not shc.");
+  if (isEmpty(i)) return logger.error("i is empty.");
+
+  const copy_sheet_info: WorkerSheetModelType = {
+    worker_sheet_id: i,
+    name: v.name,
+    gridKey,
+  };
+  await WorkerSheetService.createSheet(copy_sheet_info);
 }
 
-// 删除sheet
+// 删除sheet - 不可以直接删除记录，因为还需要恢复，应该标记 deleteFlag 属性即可（celldata可能存在外键关联，因此，不可以直接删除）
 async function shd(data: string) {
-  console.log("==> shd", data);
+  logger.info("[CRDT DATA]:", data);
+  const { t, v } = <CRDTDataType<{ deleIndex: string }>>JSON.parse(data);
+  if (t !== "shd") return logger.error("t is not shd.");
+  // {"t":"shd","i":null,"v":{"deleIndex":"Sheet_06ok13WM3kS3_1734398401711"}}
+  // 更新 deleteFlag = true
+  const info = <WorkerSheetModelType>{
+    worker_sheet_id: v.deleIndex,
+    deleteFlag: true,
+  };
+  await WorkerSheetService.update(info);
 }
 
 // 删除sheet后恢复操作
 async function shre(data: string) {
-  console.log("==> shre", data);
+  // {"t":"shre","i":null,"v":{"reIndex":"Sheet_06ok13WM3kS3_1734398401711"}}
+  logger.info("[CRDT DATA]:", data);
+  const { t, v } = <CRDTDataType<{ reIndex: string }>>JSON.parse(data);
+  if (t !== "shre") return logger.error("t is not shre.");
+  // 更新 deleteFlag = false
+  const info = <WorkerSheetModelType>{
+    worker_sheet_id: v.reIndex,
+    deleteFlag: false,
+  };
+  await WorkerSheetService.update(info);
 }
 
 // 调整sheet位置
 async function shr(data: string) {
-  console.log("==> shr", data);
+  // {"t":"shr","i":null,"v":{"12f8254d-3914-4f79-9886-9f9aec173048":0,"Sheet_0NHdie3o0ba5_1734351308939":1,"Sheet_oi07n566135m_1734351229761":2}}
+  logger.info("[CRDT DATA]:", data);
+  const { t, v } = <CRDTDataType<{ [key: string]: number }>>JSON.parse(data);
+  if (t !== "shr") return logger.error("t is not shr.");
+
+  // 循环调整位置
+  for (const i in v) {
+    if (Object.prototype.hasOwnProperty.call(v, i)) {
+      const order = v[i];
+      // 调整位置
+      const info = <WorkerSheetModelType>{ worker_sheet_id: i, order };
+      await WorkerSheetService.update(info);
+    }
+  }
+}
+
+// sheet属性(隐藏或显示)
+async function sh(data: string) {
+  // {"t":"sh","i":"Sheet_06ok13WM3kS3_1734398401711","v":1,"op":"hide","cur":"Sheet_ieo3iK3lo0m3_1734353939113"}
+  logger.info("[CRDT DATA]:", data);
+  const { t, v, i } = <CRDTDataType<number>>JSON.parse(data);
+  if (t !== "sh") return logger.error("t is not sh.");
+  if (isEmpty(i)) return logger.error("i is empty.");
+
+  // 更新 deleteFlag = false
+  const info = <WorkerSheetModelType>{
+    worker_sheet_id: i,
+    hide: Boolean(v),
+  };
+  await WorkerSheetService.update(info);
 }
 
 // 图表操作
@@ -479,6 +578,15 @@ async function c(data: string) {
     });
   }
 
+  // 更新图表配置
+  if (op === "update") {
+    await ChartService.updateChart({
+      worker_sheet_id: i,
+      chart_id: v.chart_id,
+      chartOptions: JSON.stringify(v.chartOptions),
+    });
+  }
+
   // 删除图表
   // {"t":"c","i":"89357e56-c6bc-4de0-bfd1-0e00b3086da4","v":{"cid":"chart_WW0t3io1towN_1734335743092"},"cid":"chart_WW0t3io1towN_1734335743092","op":"del"}
   if (op === "del") {
@@ -486,12 +594,13 @@ async function c(data: string) {
   }
 }
 
-// sheet属性(隐藏或显示)
-async function sh(data: string) {
-  console.log("==> sh", data);
-}
-
 // 修改工作簿名称
-async function na(data: string) {
-  console.log("==> na", data);
+async function na(data: string, gridKey: string) {
+  // {"t":"na","i":null,"v":"Luckysheet Demo222"}
+  logger.info("[CRDT DATA]:", data);
+  const { t, v } = <CRDTDataType<string>>JSON.parse(data);
+  if (t !== "na") return logger.error("t is not na.");
+
+  // 更新 workerBook name 属性即可 gridkey 在用户身上
+  await WorkerBookService.update({ title: v, gridKey });
 }

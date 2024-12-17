@@ -1,25 +1,49 @@
-import { WorkerSheetModel } from "../Sequelize/Models/WorkerSheet";
+import { logger } from "../Utils/Logger";
+import {
+  WorkerSheetModel,
+  WorkerSheetModelType,
+} from "../Sequelize/Models/WorkerSheet";
 
 /**
- * @description: 工作表服务
+ * 更新相关配置
  */
-function findAll() {
+async function update(data: WorkerSheetModelType) {
   try {
-    return WorkerSheetModel.findAll();
+    return await WorkerSheetModel.update(data, {
+      where: { worker_sheet_id: data.worker_sheet_id },
+    });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 }
 
 /**
  * 通过 gridkey 查找记录
  */
-function findAllByGridKey(gridKey: string) {
+async function findAllByGridKey(gridKey: string) {
   try {
-    return WorkerSheetModel.findAll({ where: { gridKey } });
+    return await WorkerSheetModel.findAll({
+      // 要查找当前没有被删除的表
+      where: { gridKey, deleteFlag: false },
+    });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 }
 
-export const WorkerSheetService = { findAll, findAllByGridKey };
+/**
+ * 新建 sheet
+ */
+async function createSheet(data: WorkerSheetModelType) {
+  try {
+    return await WorkerSheetModel.create(data);
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
+export const WorkerSheetService = {
+  findAllByGridKey,
+  update,
+  createSheet,
+};

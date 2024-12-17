@@ -53,7 +53,8 @@ export function createWebSocketServer(server: Server) {
       const data_str = unzip(data.toString());
 
       // 2. 用户每次编辑，都会触发 message 事件，因此，在这里实现协同数据存储
-      if (DB.getConnectState()) databaseHandler(data_str);
+      if (DB.getConnectState())
+        databaseHandler(data_str, client.clientInfo.gridkey);
 
       // 3. 广播给 wss.clients 其他客户端 - 所有的权限校验、文件ID 等验证，均在 broadcastOtherClients 函数中处理
       broadcastOtherClients(wss, client, data_str);

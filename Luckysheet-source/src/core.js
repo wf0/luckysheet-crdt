@@ -178,7 +178,7 @@ luckysheet.create = function (setting) {
 
             let data = new Function("return " + d)();
             Store.luckysheetfile = data;
-
+            console.log("==> 协同初始化数据", data);
             // 协同请求到数据后，再执行 init plugin
             initPlugins(extendsetting.plugins, data);
 

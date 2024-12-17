@@ -270,17 +270,23 @@ function renderCharts(chartLists, isDemo) {
                 }
             })
 
-
         let width = chart.width
         let height = chart.height
         let left = chart.left
         let top = chart.top
-        container.style.width = width + 'px'
-        container.style.height = height + 'px'
+
+        // 这里要兼容带单位的宽度和高度，不然会出现位置异常BUG
+        width = width.includes('px') ? width : width + 'px'
+        height = height.includes('px') ? height : height + 'px'
+        left = left.includes('px') ? left : left + 'px'
+        top = top.includes('px') ? top : top + 'px'
+
+        container.style.width = width
+        container.style.height = height
         container.style.position = 'absolute'
         container.style.background = '#fff'
-        container.style.left = left + 'px'
-        container.style.top = top + 'px'
+        container.style.left = left
+        container.style.top = top
         container.style.zIndex = chartInfo.zIndex ? chartInfo.zIndex : 15
         chartInfo.zIndex++
 
@@ -1468,6 +1474,14 @@ function selectRangeBorderHide(settingShow) {
 
     //标识：是否处理设置界面
     if (!settingShow && $('.chartSetting').is(':visible') && !isEditMode()) {
+        // 劫持用户关闭设置面板操作，发送协同更新 update options 操作
+        // 获取 chart_id
+        let sheetFile = chartInfo.luckysheetfile[getSheetIndex(chartInfo.currentSheetIndex)]
+        const chart_id = chartInfo.chartparam.luckysheetCurrentChart
+        const chartOptions = chartInfo.chartparam.getChartJson(chart_id)
+        console.log("==> 图表协同 :更新配置");
+        server.saveParam('c', sheetFile.index, { "chart_id": chart_id, chartOptions }, { "op": "update", "cid": chart_id })
+
         hideChartSettingComponent()
     }
 }
@@ -1508,8 +1522,6 @@ function hideChartSettingComponent(refresh) {
         }
 
     }
-
-    console.log("==> hideChartSettingComponent",);
 }
 
 // 隐藏其他sheet的图表，显示当前sheet的图表 chartMix 切换sheet页显示隐藏图表

@@ -20,8 +20,20 @@ function initCors(app: express.Application) {
     res.header("Access-Control-Allow-Headers", "Content-Type");
     res.header("Access-Control-Allow-Methods", "*");
     res.header("Content-Type", "application/json;charset=utf-8");
-    next()
+    next();
   });
 }
 
-export { initStaticSource, initCors };
+/**
+ * 处理 bodyparser
+ */
+function initBodyParser(app: express.Application) {
+  app.use(express.urlencoded({ extended: false }));
+  app.use(express.json());
+}
+
+export const initMeddlewear = (app: express.Application) => {
+  initStaticSource(app);
+  initCors(app);
+  initBodyParser(app);
+};

@@ -11,6 +11,7 @@ import {
   WorkerSheetModel,
   WorkerSheetModelType,
 } from "../Sequelize/Models/WorkerSheet";
+import { FindOptions } from "sequelize";
 
 /**
  * 新增 workerBooks 记录
@@ -51,12 +52,10 @@ async function create(info: WorkerBookModelType) {
  * 更新 workerBooks 记录
  */
 async function update(info: WorkerBookModelType) {
-  const { gridKey, title, lang } = info;
   try {
-    return await WorkerBookModel.update(
-      { title, lang },
-      { where: { gridKey } }
-    );
+    return await WorkerBookModel.update(info, {
+      where: { gridKey: info.gridKey },
+    });
   } catch (error) {
     logger.error(error);
   }
@@ -70,9 +69,12 @@ async function del() {}
 /**
  * 查询 workerBooks 记录
  */
-async function findOne(gridKey: string) {
+async function findOne(
+  gridKey: string,
+  options?: FindOptions<WorkerBookModelType>
+) {
   try {
-    return await WorkerBookModel.findOne({ where: { gridKey } });
+    return await WorkerBookModel.findOne({ where: { gridKey }, ...options });
   } catch (error) {
     console.error(error);
   }
