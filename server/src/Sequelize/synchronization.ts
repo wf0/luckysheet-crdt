@@ -15,8 +15,9 @@ import { HiddenAndLenModel } from "./Models/HiddenAndLen";
 import { ChartModel } from "./Models/Chart";
 
 (async () => {
-  const { host, database, user, password } = SQL_CONFIG;
+  const { port, host, database, user, password } = SQL_CONFIG;
   const sequelize = new Sequelize(database, user, password, {
+    port,
     host,
     dialect: "mysql",
   });
