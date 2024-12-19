@@ -14,26 +14,19 @@ async function initLuckysheet() {
 
   const gridKey = "gridkey_demo"; // 请注意大小写哈~
 
-  // 请求当前 workerbook 数据
-  const { data } = await fetch({
-    url: "/api/getWorkerBook",
-    method: "post",
-    data: { gridKey },
-  });
-
   /**
    * 请注意，目前前台仅为展示，并无其他能力，因此加载的是默认协同演示 worker books 数据，gridkey = gridkey_demo
    * 常理来说，当前工作簿的数据，都应该通过 fileid （gridkey） 请求得来
    */
   const options = {
-    lang: data.data.lang,
+    lang: "zh",
+    title: "Luckysheet",
     container: "luckysheetContainer",
-    title: data.data.title,
     showinfobar: false, // 隐藏顶部的信息栏
-    allowUpdate: true, // 配置协同功能
-    loadUrl: `/api/loadSheetData?gridkey=${gridKey}`,
-    updateUrl: `${WS_SERVER_URL}?type=luckysheet&userid=${id}&username=${username}&gridkey=${gridKey}`, // 协同服务转发服务
-
+    allowUpdate: false, // 配置协同功能
+    loadUrl: "",
+    updateUrl: "", // 协同服务转发服务
+    data: [],
     plugins: ["chart"],
 
     // 处理协同图片上传
@@ -61,5 +54,33 @@ async function initLuckysheet() {
     },
   };
 
-  luckysheet.create(options);
+  // 请求当前 workerbook 数据
+  try {
+    const { data } = await fetch({
+      url: "/api/getWorkerBook",
+      method: "post",
+      data: { gridKey },
+    });
+
+    // 协同服务可用场景下，才初始化协同
+    options.lang = data.data.lang;
+    options.title = data.data.title;
+    options.allowUpdate = true;
+    options.loadUrl = `/api/loadSheetData?gridkey=${gridKey}`;
+    options.updateUrl = `${WS_SERVER_URL}?type=luckysheet&userid=${id}&username=${username}&gridkey=${gridKey}`;
+
+    luckysheet.create(options);
+  } catch (error) {
+    console.error("==> 协同服务异常", error);
+    // 不然初始化普通模式，避免页面空白
+    /* eslint-disable */
+    options.data = [
+      // @ts-ignore
+      {
+        name: "Sheet1",
+        celldata: [{ r: 0, c: 0, v: { v: "协同服务不可用，当前为普通模式" } }],
+      },
+    ];
+    luckysheet.create(options);
+  }
 }

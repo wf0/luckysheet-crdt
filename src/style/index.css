@@ -19,9 +19,11 @@ iframe {
   flex: 1;
 }
 .left {
+  position: relative;
   height: 100%;
   width: 100%;
 }
 .right {
+  position: relative;
   flex: 1;
 }

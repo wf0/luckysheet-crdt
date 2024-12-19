@@ -71,12 +71,12 @@ npm run db
     "preview": "vite preview",
     "lint": "eslint --fix", 
 
-    ## 启动服务端
+    ## eslint 校验
     "lint": "eslint --fix", 
 
     ## 启动服务端
     "server": "cd server && npm run start",
-    ## 启动服务端开发环境(这个的核心是开发时使用 nodemon 监听文件变化)
+    ## 启动服务端 - 开发环境(这个的核心是开发时使用 nodemon 监听文件变化)
     "server:dev": "cd server && npm run dev",
 
     ## 创建数据库表 - 项目首次执行即可
@@ -122,35 +122,6 @@ npm run db
     + style // 前台项目样式文件
     + main.ts // 前台项目主程序
 ```
-
-<!-- 
-## WebSocketServer 参数说明
-
-```ts
-import { createServer } from 'https';
-import { WebSocketServer } from 'ws';
-
-// 1. 使用 HTTP Server 创建 websocket 服务
-const server = createServer(...)
-const wss = new WebSocketServer({ server });
-
-// express 框架中，获取 http server 的形式如下：
-
-import express from "express";
-const app = express();
-const server = app.listen(...);
-const wss = new WebSocketServer({ server });
-
-/**
- * app.listen(...) 的实现原理：
- */
- const http = require('http');
- app.listen = function listen() {
-   const server = http.createServer(this);
-   return server.listen.apply(server, arguments);
- };
-``` -->
-
 
 ## 协同功能计划表
 **已实现功能 ✅️，未实现功能 ❌️**

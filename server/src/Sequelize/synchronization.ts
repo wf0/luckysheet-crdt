@@ -7,12 +7,12 @@ import { SQL_CONFIG } from "../Config";
 import { logger } from "../Utils/Logger";
 import { MergeModel } from "./Models/Merge";
 import { ImageModel } from "./Models/Image";
+import { ChartModel } from "./Models/Chart";
 import { CellDataModel } from "./Models/CellData";
 import { WorkerBookModel } from "./Models/WorkerBook";
 import { BorderInfoModel } from "./Models/BorderInfo";
 import { WorkerSheetModel } from "./Models/WorkerSheet";
 import { HiddenAndLenModel } from "./Models/HiddenAndLen";
-import { ChartModel } from "./Models/Chart";
 
 (async () => {
   const { port, host, database, user, password } = SQL_CONFIG;

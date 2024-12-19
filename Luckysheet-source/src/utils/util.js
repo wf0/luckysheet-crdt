@@ -1,7 +1,7 @@
 import { columeHeader_word, columeHeader_word_index, luckysheetdefaultFont } from '../controllers/constant';
 import menuButton from '../controllers/menuButton';
 import { isdatatype, isdatatypemulti } from '../global/datecontroll';
-import { hasChinaword,isRealNum } from '../global/validate';
+import { hasChinaword, isRealNum } from '../global/validate';
 import Store from '../store';
 import locale from '../locale/locale';
 import numeral from 'numeral';
@@ -40,7 +40,7 @@ function common_extend(jsonbject1, jsonbject2) {
 
     for (let attr in jsonbject2) {
         // undefined is equivalent to no setting
-        if(jsonbject2[attr] == undefined){
+        if (jsonbject2[attr] == undefined) {
             continue;
         }
         resultJsonObject[attr] = jsonbject2[attr];
@@ -100,12 +100,12 @@ function getNowDateTime(format) {
     let time = '';
 
     //日期
-    if(format == 1) {
+    if (format == 1) {
         time = year + "-" + month + "-" + date;
     }
     //日期时间
-    else if(format == 2) {
-        time = year + "-" + month + "-" + date+ " " + hour + ":" + minu + ":" + sec;
+    else if (format == 2) {
+        time = year + "-" + month + "-" + date + " " + hour + ":" + minu + ":" + sec;
     }
 
     return time;
@@ -177,26 +177,26 @@ function ABCatNum(a) {
     // }
 
     // return ret;
-    if(a==null || a.length==0){
+    if (a == null || a.length == 0) {
         return NaN;
     }
-    var str=a.toLowerCase().split("");
-    var num=0;
+    var str = a.toLowerCase().split("");
+    var num = 0;
     var al = str.length;
-    var getCharNumber = function(charx){
-        return charx.charCodeAt() -96;
+    var getCharNumber = function (charx) {
+        return charx.charCodeAt() - 96;
     };
     var numout = 0;
     var charnum = 0;
-    for(var i = 0; i < al; i++){
+    for (var i = 0; i < al; i++) {
         charnum = getCharNumber(str[i]);
-        numout += charnum * Math.pow(26, al-i-1);
+        numout += charnum * Math.pow(26, al - i - 1);
     };
     // console.log(a, numout-1);
-    if(numout==0){
+    if (numout == 0) {
         return NaN;
     }
-    return numout-1;
+    return numout - 1;
 };
 
 //列下标  数字转字母
@@ -240,23 +240,23 @@ function chatatABC(n) {
     //     }
     // }
 
-    var orda = 'a'.charCodeAt(0); 
-   
-    var ordz = 'z'.charCodeAt(0); 
-   
-    var len = ordz - orda + 1; 
-   
-    var s = ""; 
-   
-    while( n >= 0 ) { 
-   
-        s = String.fromCharCode(n % len + orda) + s; 
-   
-        n = Math.floor(n / len) - 1; 
-   
-    } 
-   
-    return s.toUpperCase(); 
+    var orda = 'a'.charCodeAt(0);
+
+    var ordz = 'z'.charCodeAt(0);
+
+    var len = ordz - orda + 1;
+
+    var s = "";
+
+    while (n >= 0) {
+
+        s = String.fromCharCode(n % len + orda) + s;
+
+        n = Math.floor(n / len) - 1;
+
+    }
+
+    return s.toUpperCase();
 };
 
 function ceateABC(index) {
@@ -336,8 +336,8 @@ function createABCdim(x, count) {
  * @param {*} val 字符串
  * @param {*} subLen 要截取的字符串长度
  */
-function getByteLen(val,subLen) {
-    if(subLen === 0){
+function getByteLen(val, subLen) {
+    if (subLen === 0) {
         return "";
     }
 
@@ -356,8 +356,8 @@ function getByteLen(val,subLen) {
             len += 1;
         }
 
-        if(isRealNum(subLen) && len === ~~subLen){
-            return val.substring(0,i)
+        if (isRealNum(subLen) && len === ~~subLen) {
+            return val.substring(0, i)
         }
 
     }
@@ -415,7 +415,7 @@ function luckysheetfontformat(format) {
         }
 
         if (!format.ff) {
-            
+
             font += fontarray[0] + ', "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
         }
         else {
@@ -431,11 +431,11 @@ function luckysheetfontformat(format) {
 
                 fontfamily = fontfamily.replace(/"/g, "").replace(/'/g, "");
 
-                if(fontfamily.indexOf(" ")>-1){
+                if (fontfamily.indexOf(" ") > -1) {
                     fontfamily = '"' + fontfamily + '"';
                 }
 
-                if(fontfamily!=null && document.fonts && !document.fonts.check("12px "+fontfamily)){
+                if (fontfamily != null && document.fonts && !document.fonts.check("12px " + fontfamily)) {
                     menuButton.addFontTolist(fontfamily);
                 }
             }
@@ -481,7 +481,7 @@ function luckysheetactiveCell() {
         setTimeout(function () {
             // need preventScroll:true,fix Luckysheet has been set top, and clicking the cell will trigger the scrolling problem
             const input = document.getElementById('luckysheet-rich-text-editor');
-            input.focus({preventScroll:true});
+            input.focus({ preventScroll: true });
             $("#luckysheet-rich-text-editor").select();
             // $("#luckysheet-rich-text-editor").focus().select();
         }, 50);
@@ -490,16 +490,16 @@ function luckysheetactiveCell() {
 
 //单元格编辑聚焦
 function luckysheetContainerFocus() {
-    
+
     // $("#" + Store.container).focus({ 
     //     preventScroll: true 
     // });
-    
+
     // fix jquery error: Uncaught TypeError: ((n.event.special[g.origType] || {}).handle || g.handler).apply is not a function
     // $("#" + Store.container).attr("tabindex", 0).focus();
 
     // need preventScroll:true,fix Luckysheet has been set top, and clicking the cell will trigger the scrolling problem
-    document.getElementById(Store.container).focus({preventScroll:true});
+    document.getElementById(Store.container).focus({ preventScroll: true });
 }
 
 //数字格式
@@ -614,8 +614,11 @@ function $$(selector, context) {
 
 function seriesLoadScripts(scripts, options, callback) {
     if (typeof (scripts) !== 'object') {
-        var scripts = [scripts];
+        var scripts = scripts ? [scripts] : [];
     }
+    
+    if (!scripts.length) return
+
     var HEAD = document.getElementsByTagName('head')[0] || document.documentElement;
     var s = [];
     var last = scripts.length - 1;
@@ -731,67 +734,67 @@ function loadLinks(urls) {
     }
 }
 
-function transformRangeToAbsolute(txt1){
-    if(txt1 ==null ||txt1.length==0){
+function transformRangeToAbsolute(txt1) {
+    if (txt1 == null || txt1.length == 0) {
         return null;
     }
 
     let txtArray = txt1.split(",");
     let ret = "";
-    for(let i=0;i<txtArray.length;i++){
+    for (let i = 0; i < txtArray.length; i++) {
         let txt = txtArray[i];
-        let txtSplit = txt.split("!"), sheetName="", rangeTxt="";
-        if(txtSplit.length>1){
+        let txtSplit = txt.split("!"), sheetName = "", rangeTxt = "";
+        if (txtSplit.length > 1) {
             sheetName = txtSplit[0];
             rangeTxt = txtSplit[1];
         }
-        else{
+        else {
             rangeTxt = txtSplit[0];
         }
 
         let rangeTxtArray = rangeTxt.split(":");
 
         let rangeRet = "";
-        for(let a=0;a<rangeTxtArray.length;a++){
+        for (let a = 0; a < rangeTxtArray.length; a++) {
             let t = rangeTxtArray[a];
 
             let row = t.replace(/[^0-9]/g, "");
             let col = t.replace(/[^A-Za-z]/g, "");
             let rangeTT = ""
-            if(col!=""){
+            if (col != "") {
                 rangeTT += "$" + col;
             }
 
-            if(row!=""){
+            if (row != "") {
                 rangeTT += "$" + row;
             }
 
-            rangeRet+=rangeTT+":";
+            rangeRet += rangeTT + ":";
         }
 
-        rangeRet = rangeRet.substr(0, rangeRet.length-1);
+        rangeRet = rangeRet.substr(0, rangeRet.length - 1);
 
         ret += sheetName + rangeRet + ",";
     }
 
-    return ret.substr(0, ret.length-1); 
+    return ret.substr(0, ret.length - 1);
 }
 
-function openSelfModel(id, isshowMask=true){
-    let $t = $("#"+id)
-            .find(".luckysheet-modal-dialog-content")
-            .css("min-width", 300)
-            .end(), 
-        myh = $t.outerHeight(), 
+function openSelfModel(id, isshowMask = true) {
+    let $t = $("#" + id)
+        .find(".luckysheet-modal-dialog-content")
+        .css("min-width", 300)
+        .end(),
+        myh = $t.outerHeight(),
         myw = $t.outerWidth();
     let winw = $(window).width(), winh = $(window).height();
     let scrollLeft = $(document).scrollLeft(), scrollTop = $(document).scrollTop();
-    $t.css({ 
-    "left": (winw + scrollLeft - myw) / 2, 
-    "top": (winh + scrollTop - myh) / 3 
+    $t.css({
+        "left": (winw + scrollLeft - myw) / 2,
+        "top": (winh + scrollTop - myh) / 3
     }).show();
 
-    if(isshowMask){
+    if (isshowMask) {
         $("#luckysheet-modal-dialog-mask").show();
     }
 }
@@ -815,9 +818,9 @@ function openSelfModel(id, isshowMask=true){
 // }
 
 const createProxy = (data, k, callback) => {
-    if(!data.hasOwnProperty(k)){ 
-        console.info('No %s in data',k);
-        return; 
+    if (!data.hasOwnProperty(k)) {
+        console.info('No %s in data', k);
+        return;
     };
 
     if (getObjType(data) === 'object') {
@@ -828,39 +831,39 @@ const createProxy = (data, k, callback) => {
         }
     }
 }
-  
+
 function defineObjectReactive(obj, key, value, callback) {
     // 递归
     obj[key] = new Proxy(value, {
-      set(target, property, val, receiver) {
-        
-          setTimeout(() => {
-            callback(target, property, val, receiver);
-          }, 0);
+        set(target, property, val, receiver) {
 
-        return Reflect.set(target, property, val, receiver)
-      }
+            setTimeout(() => {
+                callback(target, property, val, receiver);
+            }, 0);
+
+            return Reflect.set(target, property, val, receiver)
+        }
     })
 }
-  
+
 function defineBasicReactive(obj, key, value, callback) {
     Object.defineProperty(obj, key, {
-      enumerable: true,
-      configurable: false,
-      get() {
-        return value
-      },
-      set(newValue) {
-        if (value === newValue) return
-        console.log(`发现 ${key} 属性 ${value} -> ${newValue}`)
+        enumerable: true,
+        configurable: false,
+        get() {
+            return value
+        },
+        set(newValue) {
+            if (value === newValue) return
+            console.log(`发现 ${key} 属性 ${value} -> ${newValue}`)
 
-        setTimeout(() => {
-            callback(value,newValue);
-        }, 0);
+            setTimeout(() => {
+                callback(value, newValue);
+            }, 0);
 
-        value = newValue
+            value = newValue
 
-      }
+        }
     })
 }
 
@@ -870,8 +873,8 @@ function defineBasicReactive(obj, key, value, callback) {
  * @param {string} item What needs to be removed
  */
 function arrayRemoveItem(array, item) {
-    array.some((curr, index, arr)=>{
-        if(curr === item){
+    array.some((curr, index, arr) => {
+        if (curr === item) {
             arr.splice(index, 1);
             return curr === item;
         }
@@ -883,12 +886,12 @@ function arrayRemoveItem(array, item) {
  * @param {string} camel camel 形式
  * @returns
  */
- function camel2split(camel) {
-    return camel.replace(/([A-Z])/g, function(all, group) {
+function camel2split(camel) {
+    return camel.replace(/([A-Z])/g, function (all, group) {
         return '-' + group.toLowerCase();
     });
 }
-  
+
 export {
     isJsonString,
     common_extend,
