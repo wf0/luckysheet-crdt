@@ -156,6 +156,9 @@ const gridHTML = function(){
                                                                 <div class="luckysheet-modal-dialog-resize-item luckysheet-modal-dialog-resize-item-rb" data-type="rb"></div>
                                                             </div>
                                                             <div class="luckysheet-modal-dialog-controll">
+                                                                <span class="luckysheet-modal-controll-btn luckysheet-modal-controll-setting" role="button" tabindex="0" aria-label="图片设置" title="图片设置">
+                                                                    <i class="fa fa-cog" aria-hidden="true"></i>
+                                                                </span>
                                                                 <span class="luckysheet-modal-controll-btn luckysheet-modal-controll-crop" role="button" tabindex="0" aria-label="裁剪" title="裁剪">
                                                                     <i class="fa fa-pencil" aria-hidden="true"></i>
                                                                 </span>

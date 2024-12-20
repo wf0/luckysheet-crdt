@@ -47,8 +47,4 @@ import { createWebSocketServer } from "./WebSocket/index"; // 导入 ws
   } catch (error) {
     logger.error(error);
   }
-
-  /** 启动测试用例 */
-  // WorkerBookService.create({ gridKey: "11111", title: "测试修改888" });
-  /** 启动测试用例 */
 })();

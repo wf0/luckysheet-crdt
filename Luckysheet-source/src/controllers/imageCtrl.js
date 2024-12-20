@@ -413,7 +413,7 @@ const imageCtrl = {
                 "bottom": -item.border.width * Store.zoomRatio,
             })
 
-            _this.sliderHtmlShow();
+            // _this.sliderHtmlShow();
 
             e.stopPropagation();
         })
@@ -425,7 +425,7 @@ const imageCtrl = {
             }
             
             if(!$("#luckysheet-modal-dialog-slider-imageCtrl").is(":visible")){
-                _this.sliderHtmlShow();
+                // _this.sliderHtmlShow();
             }
             
             _this.move = true;
@@ -442,6 +442,12 @@ const imageCtrl = {
 
             setluckysheet_scroll_status(true);
 
+            e.stopPropagation();
+        })
+
+        // image setting
+        $("#luckysheet-modal-dialog-activeImage").off("mousedown.setting").on("mousedown.setting", ".luckysheet-modal-controll-setting", function(e) {
+            _this.sliderHtmlShow();
             e.stopPropagation();
         })
 
