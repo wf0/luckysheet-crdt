@@ -1,26 +1,26 @@
 {
   "name": "luckysheet-crdt-server",
-  "version": "1.0.0",
-  "type": "commonjs",
+  "version": "0.0.0",
   "private": true,
+  "description": "luckysheet-crdt-server",
   "scripts": {
     "start": "tsc && node build/main.js",
     "dev": "nodemon -w src/* -e ts && tsc && node build/main.js",
     "build": "tsc",
     "db": "tsc && node build/Sequelize/synchronization.js"
   },
-  "author": "weifeng",
-  "license": "Apache-2.0",
-  "description": "luckysheet-crdt-server",
   "dependencies": {
     "express": "^4.21.1",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.11.5",
     "sequelize": "^6.37.5",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "dayjs": "^1.11.13",
+    "pako": "^2.1.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/pako": "^2.0.3",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.10.1",
     "@types/ws": "^8.5.13",
